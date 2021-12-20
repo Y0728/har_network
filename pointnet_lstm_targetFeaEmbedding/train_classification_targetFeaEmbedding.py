@@ -59,6 +59,7 @@ def parse_args():
     parser.add_argument('--concat_frame_num', type=int, default=concat_framNum,
                         help='The number of frames that are concatenated together as one sample')
     parser.add_argument('--pointLSTM', default=True, help='Create dataset for lstm if it is true, default is False')
+    parser.add_argument('--rnn_type', default='rnn', help='The type of recurrent network')
     return parser.parse_args()
 
 
@@ -173,7 +174,7 @@ def main(args):
     # shutil.copy('pointnet2_utils.py', str(exp_dir))
     shutil.copy('./train_classification_targetFeaEmbedding.py', str(exp_dir))
 
-    classifier = model.get_model( num_layers = 2, hidden_size = 2048, k = num_class, normal_channel=args.use_normals )
+    classifier = model.get_model( num_layers = 2, hidden_size = 2048, k = num_class, normal_channel=args.use_normals, model=args.rnn_type)
     criterion = model.get_loss()
     classifier.apply(inplace_relu)
 

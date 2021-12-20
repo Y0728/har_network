@@ -6,7 +6,7 @@ import numpy as np
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # device = torch.device('cpu')
 class get_model(nn.Module):
-    def __init__(self, num_layers, hidden_size, k=5, normal_channel=True):
+    def __init__(self, num_layers, hidden_size, k=5, normal_channel=True, model='rnn'):
         super(get_model, self).__init__()
         if normal_channel:
             channel = 6
@@ -26,8 +26,16 @@ class get_model(nn.Module):
         self.t_input_size = 9
         self.t_hidden_size = 256
         self.t_num_layers = 3
-        self.rnn_target = nn.RNN(self.t_input_size, self.t_hidden_size, self.t_num_layers, batch_first=True)
-        self.rnn = nn.RNN(self.t_hidden_size+256, hidden_size, num_layers, batch_first=True)
+        self.model = model
+        if self.model == 'rnn':
+            self.rnn_target = nn.RNN(self.t_input_size, self.t_hidden_size, self.t_num_layers, batch_first=True)
+            self.rnn = nn.RNN(self.t_hidden_size+256, hidden_size, num_layers, batch_first=True)
+        elif self.model == 'gru':
+            self.rnn_target = nn.GRU(self.t_input_size, self.t_hidden_size, self.t_num_layers, batch_first=True)
+            self.rnn = nn.GRU(self.t_hidden_size + 256, hidden_size, num_layers, batch_first=True)
+        elif self.model == 'lstm':
+            self.rnn_target = nn.LSTM(self.t_input_size, self.t_hidden_size, self.t_num_layers, batch_first=True)
+            self.rnn = nn.LSTM(self.t_hidden_size + 256, hidden_size, num_layers, batch_first=True)
 
     def forward(self, point_data, target_data):
         sample_fea = np.array([])
@@ -45,11 +53,19 @@ class get_model(nn.Module):
                 trans_fea_array = torch.cat((trans_fea_array, trans_feat[np.newaxis, :, :, :]),0)   #trans_fea_array.shape = (seq_len, batch_size,64,64)
         sample_fea = sample_fea.transpose(0,1)
         t_h0 = torch.zeros(self.t_num_layers, target_data.size(0), self.t_hidden_size).to(device)
-        target_data,_ = self.rnn_target(target_data, t_h0)
+        if self.model == 'lstm':
+            t_c0 = torch.zeros(self.t_num_layers, target_data.size(0), self.t_hidden_size).to(device)
+            target_data, _ = self.rnn_target(target_data, (t_h0,t_c0))
+        else:
+            target_data, _ = self.rnn_target(target_data, t_h0)
         input = torch.cat((target_data, sample_fea),2).to(device)
 
         h0 = torch.zeros(self.num_layers, input.size(0), self.hidden_size).to(device)
-        out, _ = self.rnn(input, h0)
+        if self.model == 'lstm':
+            c0 = torch.zeros(self.num_layers, input.size(0), self.hidden_size).to(device)
+            out, _ = self.rnn(input, (h0,c0))
+        else:
+            out, _ = self.rnn(input, h0)
         out = out[:, -1, :]
         out = F.relu(self.bn1(self.fc1(out)))
         out = F.relu(self.bn2(self.fc2(out)))
