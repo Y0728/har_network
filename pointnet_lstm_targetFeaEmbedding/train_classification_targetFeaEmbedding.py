@@ -4,6 +4,8 @@ Date: Nov 2019
 """
 
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+
 import sys
 import torch
 import numpy as np
@@ -27,7 +29,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = BASE_DIR
 sys.path.append(os.path.join(ROOT_DIR, 'models'))
-seqLen = 40
+seqLen = 10
 concat_framNum = 1
 
 torch.manual_seed(0)
@@ -44,7 +46,7 @@ def parse_args():
     parser.add_argument('--gpu', type=str, default='1', help='specify gpu device')
     parser.add_argument('--batch_size', type=int, default=512, help='batch size in training')
     parser.add_argument('--model', default='pointnet_lstm_targetFeaEmbedding', help='model name [default: pointnet_cls]')
-    parser.add_argument('--num_category', default=5, type=int, choices=[10, 40], help='training on ModelNet10/40')
+    parser.add_argument('--num_category', default=10, type=int, choices=[10, 40], help='training on ModelNet10/40')
     parser.add_argument('--epoch', default=50, type=int, help='number of epoch in training')
     parser.add_argument('--learning_rate', default=0.001, type=float, help='learning rate in training')
     parser.add_argument('--num_point', type=int, default=32 * concat_framNum, help='Point Number')
@@ -59,7 +61,7 @@ def parse_args():
     parser.add_argument('--concat_frame_num', type=int, default=concat_framNum,
                         help='The number of frames that are concatenated together as one sample')
     parser.add_argument('--pointLSTM', default=True, help='Create dataset for lstm if it is true, default is False')
-    parser.add_argument('--rnn_type', default='rnn', help='The type of recurrent network')
+    parser.add_argument('--rnn_type', default='lstm', help='The type of recurrent network')
     return parser.parse_args()
 
 
@@ -154,10 +156,10 @@ def main(args):
     # data_set = MyDataSet(dataDir, 'target', ['walk', 'sit', 'fall'])
     # data_loader = DataLoad/er(dataset=data_set, batch_size=batch_size, shuffle=True, drop_last=False)
 
-    train_dataset = HARDataset(data_path, 'PAT', activity_list, concat_framNum=args.concat_frame_num,
+    train_dataset = HARDataset(data_path, 'PAT', activity_list, concat_framNum=args.concat_frame_num,seq_len=args.seq_len,
                                file_list=train_files_point, pointLSTM=args.pointLSTM)
     trainDataLoader= DataLoader(dataset=train_dataset, batch_size=args.batch_size, shuffle=True, drop_last=False)
-    test_dataset = HARDataset(data_path, 'PAT', activity_list, concat_framNum=args.concat_frame_num,
+    test_dataset = HARDataset(data_path, 'PAT', activity_list, concat_framNum=args.concat_frame_num, seq_len=args.seq_len,
                               file_list=test_files_point, pointLSTM=args.pointLSTM)
     testDataLoader = DataLoader(dataset=test_dataset, batch_size=args.batch_size, shuffle=True, drop_last=False)
 

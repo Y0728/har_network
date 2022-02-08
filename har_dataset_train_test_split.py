@@ -7,20 +7,32 @@ import glob
 import torch
 import random
 import sys
+import h5py
 
-act_dir = {'none': 0, 'walk': 1, 'run': 2, 'sit': 3, 'fall': 4}
-
+act_dir = {'none': 0, 'walk': 1, 'run': 2, 'sit': 3, 'fall': 4,'stand':5,'squat':6,'bend':7, 'jump':8, 'lie_down':9}
+act_list = []
 
 def check_exists(path):
     return os.path.exists(path)
 
 
 def getLabel(path):
-    for a in ['None', 'walk', 'run', 'sit', 'fall']:
+    for a in ['None', 'walk', 'run', 'sit', 'fall','stand','squat','bend','jump','lie_down']:
         if a in path:
             return act_dir[a]
     return 0
 
+
+def getLabel_v2(path):
+    for a in ['None', 'walk', 'run', 'sit', 'fall','stand','squat','bend','jump','lie_down']:
+        if a in path:
+            if a in act_list:
+                return act_list.index(a) + 1
+            else:
+                act_list.append(a)
+                return act_list.index(a) + 1
+
+    return 0
 
 # 目前是按照文件划分，可以考虑增加功能，按照env划分，按照date划分，按照人员划分。。。
 def train_test_split(activity_list, datatype, har_data_dir, train_ratio):
@@ -58,10 +70,49 @@ def train_test_split(activity_list, datatype, har_data_dir, train_ratio):
 
     return train_file_list, test_file_list
 
+def save_dataset_to_h5(seq_len, concat_frame_num,act_list, x_point, x_target, y, dataset_type = None):
+    '''
+    Save the dataset to h5 file, and name it by seq_len, concate_frame_num, act_list
+    :param seq_len:
+    :param concat_frame_num:
+    :param act_list:
+    :param x_point:
+    :param x_target:
+    :param y:
+    :param dataset_type:
+    :return:
+    '''
+    if dataset_type == None:
+        dataset_type = 'None'
+    act_string = '_'.join(act_list)
+    f = h5py.File(f'../har_dataset/{dataset_type}_{seq_len}_{concat_frame_num}_{act_string}.h5', 'w')
+    f.create_dataset('x_point', data=x_point)
+    f.create_dataset('x_target', data=x_target)
+    f.create_dataset('y',data=y)
+    f.create_dataset('valid',data=1)
+    f.close()
+
+def dataset_exists(activity_list, seq_len, concat_frameNum, dataset_type = None):
+    '''
+    Check if the dataset has already existed.
+    :param activity_list:
+    :param seq_len:
+    :param concat_frameNum:
+    :param dataset_type:
+    :return:
+    '''
+    if dataset_type == None:
+        dataset_type = 'None'
+    partition = "train"
+    file_list = glob.glob(f'../har_dataset/{dataset_type}_{seq_len}_{concat_frameNum}_*.h5')
+    for file in file_list:
+        if set(os.path.basename(file).strip('.h5').split('_',3)[-1].split('_')) == set(activity_list):
+            return file   # contains root dir
+    return None
 
 class HARDataset(Dataset):
 
-    def __init__(self, path, type, act_list, concat_framNum = 1, seq_len=10, file_list=None, pointLSTM = False):
+    def __init__(self, path, type, act_list, concat_framNum = 1, seq_len=10, file_list=None, pointLSTM = False, dataset_type=None):
         """可以在初始化函数当中对数据进行一些操作，比如读取、归一化等"""
         # self.data = np.loadtxt(path)  # 读取 txt 数据
         # self.x = self.data[:, 1:]  # 输入变量
@@ -72,6 +123,7 @@ class HARDataset(Dataset):
         self.datapath = path  # '/har_data/'
         self.seq_len = seq_len
         self.concat_frameNum = concat_framNum
+        self.dataset_type=dataset_type
         if file_list != None:
             self.file_list = file_list
         # self.type = type # 'target' or 'point'
@@ -87,7 +139,8 @@ class HARDataset(Dataset):
             else:
                 self.x, self.y = self.createPointDatasetWithFileList_v2(self.file_list)
         elif self.type == 'PAT':
-            self.x_p, self.x_t, self.y = self.createPATDatasetWithFileList(self.file_list)  #file_list for points
+            # self.x_p, self.x_t, self.y = self.createPATDatasetWithFileList(self.file_list)  #file_list for points
+            self.x_p, self.x_t, self.y = self.createPATDatasetWithFileList_save_h5(self.file_list)  #file_list for points
         else:
             print('The type of dataset is not supported!')
             sys.exit(1)
@@ -278,7 +331,7 @@ class HARDataset(Dataset):
                     while frame_id[j] == curSam_frame_id:
                         j += 1
 
-                if len(samples_array) != 10:
+                if len(samples_array) != self.seq_len:
                     break
                 # concatenate the sample to dataset
                 if len(x) == 0:
@@ -377,7 +430,7 @@ class HARDataset(Dataset):
                     else:
                         x_target = np.concatenate((x_target,target_attri[idx:idx+self.seq_len][np.newaxis,:,:]))
                 # get the sample label
-                y = y + [getLabel(file)]
+                y = y + [getLabel_v2(file)]
 
                 # find the next frame_id
                 while frame_id[i] == curSeq_frame_id:
@@ -388,11 +441,106 @@ class HARDataset(Dataset):
             sys.exit(1)
 
         return torch.tensor(x_data.tolist()), torch.tensor((x_target.tolist())), y
+        # return x_data.tolist(), (x_target.tolist()), y
+
         #   x_data.shape = (sampleNum, self.seq_len, 16*self.concat_framNum, 5)
         #   x_target.shape = (sampleNum, self.seq_len, attriNum=9)
 
+    def createPATDatasetWithFileList_save_h5(self, file_list):
+        '''
+        Creates the dataset contains both point and target information
+        :param file_list: lists the point file to create dataset
+        :return: a dataset contains point samples, target samples and labels.
+        '''
+        fileName = dataset_exists(self.activity_list, self.seq_len, self.concat_frameNum, self.dataset_type)
+        if fileName and h5py.File(fileName, 'r')['valid']:
+            f = h5py.File(fileName, 'r')
+            return torch.tensor(f['x_point'][()].tolist()),torch.tensor(f['x_target'][()].tolist()), f['y'][()]
+            # torch.tensor(x_data.tolist()), torch.tensor((x_target.tolist())), y
+        else:
+            x_data = np.array([])
+            x_target = np.array([])
+            y = []
 
+            for file in file_list:
+                target_data = genfromtxt(file.replace('point', 'target'), delimiter=',')
+                t_frame_id = target_data[1:, 0]
+                target_attri = target_data[1:, 2:11]
+                point_data = genfromtxt(file, delimiter=',')  # list无法通过 slice 直接获取某一列，所以别用tolist()转成list
+                frame_id = point_data[1:, 0]
+                point_attri = point_data[1:, 2:7]
+                end_frame_id = frame_id[-1]
+                i = 0
+                while i < len(point_data):
+                    curSeq_frame_id = frame_id[i]
 
+                    thre = curSeq_frame_id + (self.concat_frameNum - 1) + self.seq_len
+                    if thre >= end_frame_id:  # if the left frames is not enough to construct a sample.
+                        break
+                    j = i
+                    c_sample = 0
+                    samples_array = np.array([])
+
+                    while c_sample < self.seq_len:
+                        curSam_frame_id = frame_id[j]
+                        thre_1 = curSam_frame_id + self.concat_frameNum
+                        c_frame = 0
+                        frame_len = len(frame_id)
+                        while j + c_frame < frame_len and frame_id[j + c_frame] < thre_1:
+                            c_frame += 1
+
+                        tmp_sample = point_attri[j:j + c_frame]
+                        if len(tmp_sample) == 0:
+                            continue
+                        # pad the point number to 16*concat_frameNum
+                        if len(tmp_sample) > (16 * self.concat_frameNum):
+                            sample = tmp_sample[:16 * self.concat_frameNum]
+                        else:
+                            sample = np.tile(tmp_sample, (int(np.ceil((16 * self.concat_frameNum) / len(tmp_sample))), 1))[
+                                     :16 * self.concat_frameNum]
+                        if len(samples_array) == 0:
+                            samples_array = sample[np.newaxis, :, :]
+                        else:
+                            samples_array = np.concatenate((samples_array, sample[np.newaxis, :, :]))
+
+                        c_sample += 1
+
+                        if frame_id[j] == end_frame_id:
+                            break
+                        while frame_id[j] == curSam_frame_id:
+                            j += 1
+
+                    if len(samples_array) != self.seq_len:
+                        break
+                    # concatenate the sample to dataset
+                    idx = np.where(t_frame_id[:] == frame_id[i])[0][0]
+                    if len(x_data) == 0:  # 因为目前data_collecting 逻辑是有一个target才会记录数据，所以point的帧数小于等于target
+                        # 所以记录的时候先以point为准，有point才做成sample
+                        # x_data.shape=(sampleNums, seq_len, 16*concat_framNum, attriNum)
+                        x_data = samples_array[np.newaxis, :,
+                                 :]  # samples_array.shape = (seq_len, pointNum=(16*concat_framNum, arrtiNum)
+                        x_target = target_attri[idx:idx + self.seq_len][np.newaxis, :, :]
+                    else:
+                        x_data = np.concatenate((x_data, samples_array[np.newaxis, :, :]))
+                        # x = np.array([x, sample])# 这样会报栈溢出的错 "Fatal Python error: Cannot recover from stack overflow"
+                        if len(x_target) == 0:
+                            x_target = target_attri[idx:idx + self.seq_len][np.newaxis, :, :]
+                        else:
+                            x_target = np.concatenate((x_target, target_attri[idx:idx + self.seq_len][np.newaxis, :, :]))
+                    # get the sample label
+                    y = y + [getLabel_v2(file)]
+
+                    # find the next frame_id
+                    while frame_id[i] == curSeq_frame_id:
+                        i += 1
+
+            if len(x_data) == 0:
+                print('Warning: Dataset is not found!')
+                sys.exit(1)
+
+            save_dataset_to_h5(self.seq_len, self.concat_frameNum, self.activity_list,x_data, x_target, y, self.dataset_type)
+
+            return torch.tensor(x_data.tolist()), torch.tensor((x_target.tolist())), y
 
     def __len__(self):
         """返回数据集当中的样本个数"""
@@ -408,10 +556,10 @@ class HARDataset(Dataset):
 
 # dataDir = "../har_data/"
 # activity_list = ['walk', 'sit', 'fall']
-# train_files, test_files = train_test_split(activity_list, 'target', dataDir, 0.75)
-# print(len(train_files))
+# # train_files, test_files = train_test_split(activity_list, 'target', dataDir, 0.75)
+# # print(len(train_files))
 # train_files, test_files = train_test_split(activity_list, 'point', dataDir, 0.75)
-# train_dataset = HARDataset(dataDir, 'point', ['walk', 'sit', 'fall'], 10, train_files)
+# train_dataset = HARDataset(dataDir, 'point', ['fall'], concat_framNum=1,seq_len=10, file_list=train_files,pointLSTM=True)
 
 # print(len(train_files))
 

@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" remoteFilesAllowedToDisappearOnAutoupload="false" showNewOnSourceInSync="false">
+  <component name="PublishConfigData" autoUpload="Always" serverName="mz@10.112.169.165:632" remoteFilesAllowedToDisappearOnAutoupload="false" showNewOnSourceInSync="false">
     <serverData>
+      <paths name="10.112.169.165">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/mz/Human_activity/yj/har_network" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
       <paths name="mz@10.112.169.165:632">
         <serverdata>
           <mappings>

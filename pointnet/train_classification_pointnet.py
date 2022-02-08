@@ -3,7 +3,8 @@ Author: Benny
 Date: Nov 2019
 """
 
-import os
+import os  #注意！！需要放到最前面，这两句放到torch后就不起作用。。
+os.environ["CUDA_VISIBLE_DEVICES"] = "2,3,4"
 import sys
 import torch
 import numpy as np
@@ -21,22 +22,29 @@ from tqdm import tqdm
 # from data_utils.ModelNetDataLoader import ModelNetDataLoader
 from torch.utils.data import Dataset, DataLoader
 from har_dataset_train_test_split import train_test_split, HARDataset
+import random
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = BASE_DIR
 sys.path.append(os.path.join(ROOT_DIR, 'models'))
-seqLen = 60
+seqLen = 40
 concat_framNum = 1
 
+
+torch.manual_seed(0)
+torch.cuda.manual_seed(0)
+np.random.seed(0)
+random.seed(0)
 
 def parse_args():
     '''PARAMETERS'''
     parser = argparse.ArgumentParser('training')
     parser.add_argument('--use_cpu', action='store_true', default=True, help='use cpu mode')
     parser.add_argument('--gpu', type=str, default='1', help='specify gpu device')
-    parser.add_argument('--batch_size', type=int, default=24, help='batch size in training')
+    parser.add_argument('--batch_size', type=int, default=512, help='batch size in training')
     parser.add_argument('--model', default='pointnet_cls', help='model name [default: pointnet_cls]')
-    parser.add_argument('--num_category', default=5, type=int, choices=[10, 40], help='training on ModelNet10/40')
+    parser.add_argument('--num_category', default=10, type=int, choices=[10, 40], help='training on ModelNet10/40')
     parser.add_argument('--epoch', default=50, type=int, help='number of epoch in training')
     parser.add_argument('--learning_rate', default=0.001, type=float, help='learning rate in training')
     parser.add_argument('--num_point', type=int, default=16 * concat_framNum, help='Point Number')
@@ -47,7 +55,7 @@ def parse_args():
     parser.add_argument('--process_data', action='store_true', default=False, help='save data offline')
     parser.add_argument('--use_uniform_sample', action='store_true', default=False, help='use uniform sampling')
     parser.add_argument('--seq_len', default=seqLen, help='default is 10')
-    parser.add_argument('--activity_list', default=['walk', 'sit', 'fall', 'run'], help='activity types')
+    parser.add_argument('--activity_list', default=['walk','sit','fall', 'run','bend','jump'], help='activity types')
     parser.add_argument('--concat_frame_num', type=int, default=1,
                         help='The number of frames that are concatenated together as one sample')
     parser.add_argument('--pointLSTM', default=False, help='Create dataset for lstm if it is true, default is False')
@@ -103,7 +111,7 @@ def main(args):
 
     '''CREATE DIR'''
     timestr = str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))
-    exp_dir = Path('./pointnet/log/')
+    exp_dir = Path('./log/')
     exp_dir.mkdir(exist_ok=True)
     exp_dir = exp_dir.joinpath('classification')
     exp_dir.mkdir(exist_ok=True)
@@ -131,7 +139,7 @@ def main(args):
 
     '''DATA LOADING'''
     log_string('Load dataset ...')
-    data_path = '../har_data'
+    data_path = '../../har_data'
     activity_list = args.activity_list
     train_files, test_files = train_test_split(activity_list, 'point', data_path, 0.75)
     log_string('train_files:%s' % train_files)
@@ -154,9 +162,9 @@ def main(args):
     '''MODEL LOADING'''
     num_class = args.num_category
     model = importlib.import_module(args.model)
-    shutil.copy('./pointnet/%s.py' % args.model, str(exp_dir))
+    shutil.copy('./%s.py' % args.model, str(exp_dir))
     # shutil.copy('pointnet2_utils.py', str(exp_dir))
-    shutil.copy('../pointnet/train_classification_pointnet.py', str(exp_dir))
+    shutil.copy('./train_classification_pointnet.py', str(exp_dir))
 
     classifier = model.get_model(num_class, normal_channel=args.use_normals)
     criterion = model.get_loss()

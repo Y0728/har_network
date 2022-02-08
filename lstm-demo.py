@@ -9,23 +9,23 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # Hyper-parameters
 # PC
 
-num_classes = 4
-num_epochs = 2
-batch_size = 100
+num_classes = 9
+num_epochs = 50
+batch_size = 512
 learning_rate = 0.001
 
 input_size = 9 # 28
 sequence_length = 20 # 28
 hidden_size = 128
-num_layers = 2
+num_layers = 3
 
 dataDir = "../har_data/"
-activity_list = ['walk', 'sit', 'fall']
+activity_list = ['walk', 'sit', 'fall','stand','squat','bend','jump']
 
 # data_set = MyDataSet(dataDir, 'target', ['walk', 'sit', 'fall'],sequence_length)
 # data_loader = DataLoader(dataset=data_set, batch_size=batch_size, shuffle=True, drop_last=False)
 
-train_files, test_files = train_test_split(activity_list, dataDir, 0.75)
+train_files, test_files = train_test_split(activity_list,'target', dataDir, 0.75)
 train_dataset = HARDataset(dataDir, 'target', activity_list, seq_len = sequence_length, file_list=train_files)
 train_dataloader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True, drop_last=False)
 test_dataset = HARDataset(dataDir, 'target', activity_list, seq_len = sequence_length, file_list=test_files)

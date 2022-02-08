@@ -6,7 +6,7 @@ import numpy as np
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # device = torch.device('cpu')
 class get_model(nn.Module):
-    def __init__(self, input_size, num_layers, hidden_size, k=5, normal_channel=True, feat_trans = False):
+    def __init__(self, input_size, num_layers, hidden_size, k=5, normal_channel=True, feat_trans = False,model='rnn'):
         super(get_model, self).__init__()
         if normal_channel:
             channel = 6
@@ -24,7 +24,14 @@ class get_model(nn.Module):
 
         self.num_layers = num_layers
         self.hidden_size = hidden_size
-        self.rnn = nn.RNN(input_size, hidden_size, num_layers, batch_first=True)
+        self.model = model
+        if self.model == 'lstm':
+            self.rnn = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
+
+        elif self.model == 'rnn':
+            self.rnn = nn.RNN(input_size, hidden_size, num_layers, batch_first=True)
+        elif self.model == 'gru':
+            self.rnn = nn.GRU(input_size, hidden_size, num_layers, batch_first=True)
 
     def forward(self, point_data, target_data):
         sample_fea = np.array([])
@@ -46,7 +53,12 @@ class get_model(nn.Module):
         input = torch.cat((target_data, sample_fea),2).to(device)
 
         h0 = torch.zeros(self.num_layers, input.size(0), self.hidden_size).to(device)
-        out, _ = self.rnn(input, h0)
+
+        if self.model == 'lstm':
+            c0 = torch.zeros(self.num_layers, input.size(0), self.hidden_size).to(device)
+            out, _ = self.rnn(input, (h0, c0))
+        else:
+            out, _ = self.rnn(input, h0)
         out = out[:, -1, :]
         out = F.relu(self.bn1(self.fc1(out)))
         out = F.relu(self.bn2(self.fc2(out)))

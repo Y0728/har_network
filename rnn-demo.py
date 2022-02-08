@@ -9,8 +9,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # Hyper-parameters
 # PC
 num_classes = 5
-num_epochs = 2
-batch_size = 24
+num_epochs = 50
+batch_size = 512
 learning_rate = 0.001
 
 input_size = 9 # 28

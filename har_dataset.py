@@ -5,6 +5,7 @@ from numpy import genfromtxt
 import os
 import glob
 import torch
+import sys
 
 
 class HARDataset(Dataset):
@@ -97,6 +98,6 @@ class HARDataset(Dataset):
         """返回样本集中的第 index 个样本；输入变量在前，输出变量在后"""
         return self.x[index, :], self.y[index]
 
-# dataDir = "../har_data/"
-# data_set = MyDataSet(dataDir, 'target', ['walk', 'sit', 'fall'],5)
-# data_loader = DataLoader(dataset=data_set, batch_size=200, shuffle=True, drop_last=False)
+dataDir = "../har_data/"
+data_set = HARDataset(dataDir, 'target', ['walk', 'sit', 'fall'],5)
+data_loader = DataLoader(dataset=data_set, batch_size=200, shuffle=True, drop_last=False)

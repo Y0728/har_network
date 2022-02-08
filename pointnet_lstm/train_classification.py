@@ -27,13 +27,13 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = BASE_DIR
 sys.path.append(os.path.join(ROOT_DIR, 'models'))
-seqLen = 20
-concat_framNum = 3
+seqLen = 40
+concat_framNum = 1
 
-torch.manual_seed(0)
-torch.cuda.manual_seed(0)
-np.random.seed(0)
-random.seed()
+torch.manual_seed(23)
+torch.cuda.manual_seed(23)
+np.random.seed(23)
+random.seed(23)
 torch.backends.cudnn.deterministic = True
 
 
@@ -42,7 +42,7 @@ def parse_args():
     parser = argparse.ArgumentParser('training')
     parser.add_argument('--use_cpu', action='store_true', default=False, help='use cpu mode')
     parser.add_argument('--gpu', type=str, default='1', help='specify gpu device')
-    parser.add_argument('--batch_size', type=int, default=128, help='batch size in training')
+    parser.add_argument('--batch_size', type=int, default=24, help='batch size in training')
     parser.add_argument('--model', default='pointnet_lstm', help='model name [default: pointnet_cls]')
     parser.add_argument('--num_category', default=5, type=int, choices=[10, 40], help='training on ModelNet10/40')
     parser.add_argument('--epoch', default=50, type=int, help='number of epoch in training')
@@ -59,6 +59,7 @@ def parse_args():
     parser.add_argument('--concat_frame_num', type=int, default=concat_framNum,
                         help='The number of frames that are concatenated together as one sample')
     parser.add_argument('--pointLSTM', default=True, help='Create dataset for lstm if it is true, default is False')
+    parser.add_argument('--rnn_type', default='rnn', help='The type of recurrent network')
     return parser.parse_args()
 
 
@@ -115,7 +116,7 @@ def main(args):
 
     '''CREATE DIR'''
     timestr = str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))
-    exp_dir = Path('./pointnet_lstm/log/')
+    exp_dir = Path('./log/')
     exp_dir.mkdir(exist_ok=True)
     exp_dir = exp_dir.joinpath('classification')
     exp_dir.mkdir(exist_ok=True)
@@ -143,7 +144,7 @@ def main(args):
 
     '''DATA LOADING'''
     log_string('Load dataset ...')
-    data_path = '../har_data'
+    data_path = '../../har_data'
     activity_list = args.activity_list
     train_files_point, test_files_point = train_test_split(activity_list, 'point', data_path, 0.75)
     # train_files_target = [p.replace('point','target') for p in train_files_point]
@@ -169,11 +170,11 @@ def main(args):
     '''MODEL LOADING'''
     num_class = args.num_category
     model = importlib.import_module(args.model)
-    shutil.copy('./pointnet_lstm/%s.py' % args.model, str(exp_dir))
+    shutil.copy('./%s.py' % args.model, str(exp_dir))
     # shutil.copy('pointnet2_utils.py', str(exp_dir))
-    shutil.copy('./pointnet_lstm/train_classification.py', str(exp_dir))
+    shutil.copy('./train_classification.py', str(exp_dir))
 
-    classifier = model.get_model(input_size = 9+1024, num_layers = 2, hidden_size = 2048, k = num_class, normal_channel=args.use_normals )
+    classifier = model.get_model(input_size = 9+1024, num_layers = 2, hidden_size = 2048, k = num_class, normal_channel=args.use_normals, model=args.rnn_type )
     criterion = model.get_loss()
     classifier.apply(inplace_relu)
 

@@ -27,7 +27,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = BASE_DIR
 sys.path.append(os.path.join(ROOT_DIR, 'models'))
-seqLen = 10
+seqLen = 40
 concat_framNum = 1
 
 torch.manual_seed(0)
@@ -42,9 +42,9 @@ def parse_args():
     parser = argparse.ArgumentParser('training')
     parser.add_argument('--use_cpu', action='store_true', default=False, help='use cpu mode')
     parser.add_argument('--gpu', type=str, default='1', help='specify gpu device')
-    parser.add_argument('--batch_size', type=int, default=24, help='batch size in training')
+    parser.add_argument('--batch_size', type=int, default=512, help='batch size in training')
     parser.add_argument('--model', default='pointnet_lstm_woFeaTrans', help='model name [default: pointnet_cls]')
-    parser.add_argument('--num_category', default=5, type=int, choices=[10, 40], help='training on ModelNet10/40')
+    parser.add_argument('--num_category', default=10, type=int, choices=[10, 40], help='training on ModelNet10/40')
     parser.add_argument('--epoch', default=50, type=int, help='number of epoch in training')
     parser.add_argument('--learning_rate', default=0.001, type=float, help='learning rate in training')
     parser.add_argument('--num_point', type=int, default=32 * concat_framNum, help='Point Number')
@@ -55,11 +55,12 @@ def parse_args():
     parser.add_argument('--process_data', action='store_true', default=False, help='save data offline')
     parser.add_argument('--use_uniform_sample', action='store_true', default=False, help='use uniform sampling')
     parser.add_argument('--seq_len', default=seqLen, help='default is 10')
-    parser.add_argument('--activity_list', default=['walk', 'sit', 'fall', 'run'], help='activity types') #['fall', 'run']
+    parser.add_argument('--activity_list', default=['fall','sit', 'walk','run','jump'], help='activity types') #['fall', 'run']
     parser.add_argument('--concat_frame_num', type=int, default=concat_framNum,
                         help='The number of frames that are concatenated together as one sample')
     parser.add_argument('--pointLSTM', default=True, help='Create dataset for lstm if it is true, default is False')
     parser.add_argument('--fea_trans', default=False, help='Whether perform feature alignment')
+    parser.add_argument('--rnn_type', default='gru', help='The type of recurrent network')
     return parser.parse_args()
 
 
@@ -116,7 +117,7 @@ def main(args):
 
     '''CREATE DIR'''
     timestr = str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))
-    exp_dir = Path('./pointnet_lstm_woFeaTrans/log/')
+    exp_dir = Path('./log/')
     exp_dir.mkdir(parents=True,exist_ok=True)
     exp_dir = exp_dir.joinpath('classification')
     exp_dir.mkdir(exist_ok=True)
@@ -144,7 +145,7 @@ def main(args):
 
     '''DATA LOADING'''
     log_string('Load dataset ...')
-    data_path = '../har_data'
+    data_path = '../../har_data'
     activity_list = args.activity_list
     train_files_point, test_files_point = train_test_split(activity_list, 'point', data_path, 0.75)
     # train_files_target = [p.replace('point','target') for p in train_files_point]
@@ -170,11 +171,11 @@ def main(args):
     '''MODEL LOADING'''
     num_class = args.num_category
     model = importlib.import_module(args.model)
-    shutil.copy('./pointnet_lstm_woFeaTrans/%s.py' % args.model, str(exp_dir))
+    shutil.copy('./%s.py' % args.model, str(exp_dir))
     # shutil.copy('pointnet2_utils.py', str(exp_dir))
-    shutil.copy('./pointnet_lstm_woFeaTrans/train_classification_pnlstm_woFeaTrans.py', str(exp_dir))
+    shutil.copy('./train_classification_pnlstm_woFeaTrans.py', str(exp_dir))
 
-    classifier = model.get_model(input_size = 9+1024, num_layers = 2, hidden_size = 2048, k = num_class, normal_channel=args.use_normals, feat_trans=args.fea_trans )
+    classifier = model.get_model(input_size = 9+1024, num_layers = 2, hidden_size = 2048, k = num_class, normal_channel=args.use_normals, feat_trans=args.fea_trans, model= args.rnn_type )
     criterion = model.get_loss()
     classifier.apply(inplace_relu)
 
