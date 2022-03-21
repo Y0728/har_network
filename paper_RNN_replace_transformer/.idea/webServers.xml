@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="40bb9518-e2d9-4b36-9b4f-ee8faac9e50e" name="zlc@10.112.74.169">
+        <fileTransfer rootFolder="/home/zlc/yj/HAR/har_network/" accessType="SFTP" host="10.112.74.169" port="22222" sshConfigId="441dff82-698d-4e52-838f-9b41792ee741" sshConfig="zlc@10.112.74.169:22222 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

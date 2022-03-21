@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" autoUpload="Always" serverName="zlc@10.112.74.169:22222" remoteFilesAllowedToDisappearOnAutoupload="false">
+    <serverData>
+      <paths name="zlc@10.112.74.169">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/paper_RNN_replace_transformer" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="zlc@10.112.74.169:22222">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/zlc/yj/HAR/har_network/paper_RNN_replace_transformer" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
+  </component>
+</project>

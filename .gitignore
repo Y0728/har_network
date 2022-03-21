@@ -1,1 +1,4 @@
 /data/
+/pointnet_mlp_transformer/test.py
+/pointnet_mlp_transformer/flops.py
+/paper_RNN_replace_transformer/train_20_3_walk.h5

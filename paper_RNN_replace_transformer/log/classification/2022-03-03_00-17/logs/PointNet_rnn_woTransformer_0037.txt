@@ -1,0 +1,752 @@
+2022-03-03 00:17:22,836 - Model - INFO - PARAMETER ...
+2022-03-03 00:17:22,836 - Model - INFO - Namespace(activity_list=['stand', 'jump', 'sit', 'fall', 'run', 'walk', 'bend'], batch_size=512, concat_frame_num=3, decay_rate=0.0001, epoch=60, gpu='1', learning_rate=0.001, log_dir=None, model='PointNet_rnn_woTransformer_0037', num_category=8, num_point=96, optimizer='Adam', plot_result_in_tensorboard=True, pointLSTM=True, process_data=False, rnn_type='gru', seq_len=20, use_cpu=True, use_normals=False, use_uniform_sample=False)
+2022-03-03 00:17:22,836 - Model - INFO - Load dataset ...
+2022-03-03 00:17:22,844 - Model - INFO - train_files_point:['../../har_data/stand/2021_12_24/raw/lxy_stand__2021-12-24-14-08-43_67_point.csv', '../../har_data/stand/2021_12_24/raw/sym_stand__2021-12-24-14-48-24_46_point.csv', '../../har_data/stand/2021_12_24/raw/zxl_stand__2021-12-24-17-27-33_85_point.csv', '../../har_data/stand/2021_12_24/raw/zxl_stand__2021-12-24-17-26-39_60_point.csv', '../../har_data/stand/2021_12_24/raw/sym_stand__2021-12-24-14-49-44_50_point.csv', '../../har_data/stand/2021_12_24/raw/lk_stand__2021-12-24-14-25-10_46_point.csv', '../../har_data/stand/2021_12_24/raw/lxy_stand__2021-12-24-14-03-06_66_point.csv', '../../har_data/stand/2021_12_24/raw/sym_stand__2021-12-24-14-51-07_58_point.csv', '../../har_data/stand/2021_12_24/raw/lk_stand__2021-12-24-14-24-18_48_point.csv', '../../har_data/stand/2021_12_24/raw/lhb_stand__2021-12-24-17-18-41_94_point.csv', '../../har_data/stand/2021_12_24/raw/lhb_stand__2021-12-24-17-14-13_71_point.csv', '../../har_data/stand/2021_12_24/raw/lxy_stand__2021-12-24-14-07-29_67_point.csv', '../../har_data/stand/2021_12_24/raw/lk_stand__2021-12-24-14-24-04_48_point.csv', '../../har_data/stand/2021_12_24/raw/lhb_stand__2021-12-24-17-14-46_71_point.csv', '../../har_data/stand/2021_12_24/raw/zxl_stand__2021-12-24-17-28-04_69_point.csv', '../../har_data/stand/2021_12_24/raw/sym_stand__2021-12-24-14-50-39_49_point.csv', '../../har_data/stand/2021_12_24/raw/lk_stand__2021-12-24-14-26-13_60_point.csv', '../../har_data/stand/2021_12_24/raw/zxl_stand__2021-12-24-17-28-32_59_point.csv', '../../har_data/stand/2021_12_24/raw/lxy_stand__2021-12-24-14-03-26_55_point.csv', '../../har_data/stand/2021_12_24/raw/sym_stand__2021-12-24-14-50-24_50_point.csv', '../../har_data/stand/2021_12_24/raw/lxy_stand__2021-12-24-14-08-04_74_point.csv', '../../har_data/stand/2021_12_24/raw/lk_stand__2021-12-24-14-26-44_64_point.csv', '../../har_data/stand/2021_12_24/raw/lhb_stand__2021-12-24-17-17-24_75_point.csv', '../../har_data/stand/2021_12_24/raw/sym_stand__2021-12-24-14-49-16_46_point.csv', '../../har_data/stand/2021_12_24/raw/zxl_stand__2021-12-24-17-28-45_68_point.csv', '../../har_data/stand/2021_12_24/raw/lk_stand__2021-12-24-14-24-56_59_point.csv', '../../har_data/stand/2021_12_24/raw/sym_stand__2021-12-24-14-50-07_20_point.csv', '../../har_data/stand/2021_12_24/raw/lhb_stand__2021-12-24-17-15-18_88_point.csv', '../../har_data/stand/2021_12_24/raw/zxl_stand__2021-12-24-17-29-13_65_point.csv', '../../har_data/stand/2021_12_24/raw/sym_stand__2021-12-24-14-52-46_45_point.csv', '../../har_data/stand/2021_12_24/raw/sym_stand__2021-12-24-14-49-04_47_point.csv', '../../har_data/stand/2021_12_24/raw/zxl_stand__2021-12-24-17-27-06_64_point.csv', '../../har_data/stand/2021_12_24/raw/sym_stand__2021-12-24-14-48-50_40_point.csv', '../../har_data/stand/2021_12_24/raw/lhb_stand__2021-12-24-17-16-07_97_point.csv', '../../har_data/stand/2021_12_24/raw/lk_stand__2021-12-24-14-27-14_59_point.csv', '../../har_data/stand/2021_12_24/raw/zxl_stand__2021-12-24-17-30-02_74_point.csv', '../../har_data/stand/2021_12_24/raw/lk_stand__2021-12-24-14-25-43_52_point.csv', '../../har_data/stand/2021_12_24/raw/lhb_stand__2021-12-24-17-14-30_84_point.csv', '../../har_data/stand/2021_12_24/raw/lxy_stand__2021-12-24-14-07-47_66_point.csv', '../../har_data/stand/2021_12_24/raw/lhb_stand__2021-12-24-17-15-02_71_point.csv', '../../har_data/stand/2021_12_24/raw/lhb_stand__2021-12-24-17-16-40_78_point.csv', '../../har_data/stand/2021_12_24/raw/zxl_stand__2021-12-24-17-28-59_73_point.csv', '../../har_data/stand/2021_12_24/raw/zxl_stand__2021-12-24-17-26-14_57_point.csv', '../../har_data/stand/2021_12_24/raw/lhb_stand__2021-12-24-17-17-09_86_point.csv', '../../har_data/stand/2021_12_24/raw/sym_stand__2021-12-24-14-53-00_59_point.csv', '../../har_data/stand/2021_12_24/raw/zxl_stand__2021-12-24-17-26-53_70_point.csv', '../../har_data/stand/2021_12_24/raw/lk_stand__2021-12-24-14-27-29_60_point.csv', '../../har_data/stand/2021_12_24/raw/lk_stand__2021-12-24-14-23-22_56_point.csv', '../../har_data/stand/2021_12_24/raw/lxy_stand__2021-12-24-14-07-14_55_point.csv', '../../har_data/stand/2021_12_24/raw/lxy_stand__2021-12-24-14-09-15_80_point.csv', '../../har_data/stand/2021_12_24/raw/zxl_stand__2021-12-24-17-28-18_83_point.csv', '../../har_data/stand/2021_12_24/raw/lxy_stand__2021-12-24-14-08-27_85_point.csv', '../../har_data/stand/2021_12_24/raw/lhb_stand__2021-12-24-17-19-09_72_point.csv', '../../har_data/stand/2021_12_24/raw/sym_stand__2021-12-24-14-52-04_47_point.csv', '../../har_data/stand/2021_12_24/raw/lhb_stand__2021-12-24-17-18-55_77_point.csv', '../../har_data/stand/2021_12_24/raw/lhb_stand__2021-12-24-17-15-32_73_point.csv', '../../har_data/stand/2021_12_24/raw/lk_stand__2021-12-24-14-25-59_66_point.csv', '../../har_data/stand/2021_12_24/raw/sym_stand__2021-12-24-14-50-09_24_point.csv', '../../har_data/stand/2021_12_24/raw/zxl_stand__2021-12-24-17-29-49_74_point.csv', '../../har_data/stand/2021_12_24/raw/lk_stand__2021-12-24-14-28-38_56_point.csv', '../../har_data/stand/2021_12_24/raw/lk_stand__2021-12-24-14-23-48_53_point.csv', '../../har_data/stand/2021_12_24/raw/lk_stand__2021-12-24-14-26-58_59_point.csv', '../../har_data/stand/2021_12_24/raw/zxl_stand__2021-12-24-17-29-35_69_point.csv', '../../har_data/stand/2021_12_24/raw/sym_stand__2021-12-24-14-51-46_62_point.csv', '../../har_data/stand/2021_12_24/raw/lhb_stand__2021-12-24-17-16-53_64_point.csv', '../../har_data/stand/2021_12_24/raw/lk_stand__2021-12-24-14-25-28_60_point.csv', '../../har_data/stand/2021_12_24/raw/lhb_stand__2021-12-24-17-15-47_73_point.csv', '../../har_data/stand/2021_12_24/raw/sym_stand__2021-12-24-14-52-33_51_point.csv', '../../har_data/stand/2021_12_24/raw/lk_stand__2021-12-24-14-27-46_56_point.csv', '../../har_data/stand/2021_12_24/raw/lk_stand__2021-12-24-14-24-41_56_point.csv', '../../har_data/jump/2021_12_24/raw/lk_jump__2021-12-24-14-29-04_44_point.csv', '../../har_data/jump/2021_12_24/raw/lhb_jump__2021-12-24-17-23-01_67_point.csv', '../../har_data/jump/2021_12_24/raw/lk_jump__2021-12-24-14-29-37_59_point.csv', '../../har_data/jump/2021_12_24/raw/sym_jump__2021-12-24-14-44-26_48_point.csv', '../../har_data/jump/2021_12_24/raw/lxy_jump__2021-12-24-14-16-21_54_point.csv', '../../har_data/jump/2021_12_24/raw/lhb_jump__2021-12-24-17-22-52_66_point.csv', '../../har_data/jump/2021_12_24/raw/lk_jump__2021-12-24-14-29-12_76_point.csv', '../../har_data/jump/2021_12_24/raw/zxl_jump__2021-12-24-17-31-13_49_point.csv', '../../har_data/jump/2021_12_24/raw/sym_jump__2021-12-24-14-44-39_48_point.csv', '../../har_data/jump/2021_12_24/raw/sym_jump__2021-12-24-14-44-59_61_point.csv', '../../har_data/jump/2021_12_24/raw/lk_jump__2021-12-24-14-30-03_48_point.csv', '../../har_data/jump/2021_12_24/raw/zxl_jump__2021-12-24-17-32-03_45_point.csv', '../../har_data/jump/2021_12_24/raw/lk_jump__2021-12-24-14-31-00_72_point.csv', '../../har_data/jump/2021_12_24/raw/lhb_jump__2021-12-24-17-22-56_57_point.csv', '../../har_data/jump/2021_12_24/raw/lxy_jump__2021-12-24-14-17-03_51_point.csv', '../../har_data/jump/2021_12_24/raw/lxy_jump__2021-12-24-14-15-30_63_point.csv', '../../har_data/jump/2021_12_24/raw/zxl_jump__2021-12-24-17-31-44_50_point.csv', '../../har_data/jump/2021_12_24/raw/sym_jump__2021-12-24-14-44-49_51_point.csv', '../../har_data/jump/2021_12_24/raw/zxl_jump__2021-12-24-17-31-19_51_point.csv', '../../har_data/jump/2021_12_24/raw/lxy_jump__2021-12-24-14-15-48_34_point.csv', '../../har_data/jump/2021_12_24/raw/lxy_jump__2021-12-24-14-15-05_71_point.csv', '../../har_data/jump/2021_12_24/raw/lk_jump__2021-12-24-14-30-30_92_point.csv', '../../har_data/jump/2021_12_24/raw/lxy_jump__2021-12-24-14-17-20_58_point.csv', '../../har_data/jump/2021_12_24/raw/lxy_jump__2021-12-24-14-16-01_57_point.csv', '../../har_data/jump/2021_12_24/raw/zxl_jump__2021-12-24-17-32-13_36_point.csv', '../../har_data/jump/2021_12_24/raw/sym_jump__2021-12-24-14-45-31_52_point.csv', '../../har_data/jump/2021_12_24/raw/zxl_jump__2021-12-24-17-31-39_55_point.csv', '../../har_data/jump/2021_12_24/raw/lk_jump__2021-12-24-14-30-38_41_point.csv', '../../har_data/jump/2021_12_24/raw/lk_jump__2021-12-24-14-29-18_63_point.csv', '../../har_data/jump/2021_12_24/raw/lhb_jump__2021-12-24-17-22-18_53_point.csv', '../../har_data/jump/2021_12_24/raw/sym_jump__2021-12-24-14-44-54_21_point.csv', '../../har_data/jump/2021_12_24/raw/lhb_jump__2021-12-24-17-22-29_71_point.csv', '../../har_data/jump/2021_12_24/raw/zxl_jump__2021-12-24-17-32-08_56_point.csv', '../../har_data/jump/2021_12_24/raw/sym_jump__2021-12-24-14-45-04_40_point.csv', '../../har_data/jump/2021_12_24/raw/sym_jump__2021-12-24-14-45-26_36_point.csv', '../../har_data/jump/2021_12_24/raw/lk_jump__2021-12-24-14-28-56_50_point.csv', '../../har_data/jump/2021_12_24/raw/lxy_jump__2021-12-24-14-17-14_55_point.csv', '../../har_data/jump/2021_12_24/raw/sym_jump__2021-12-24-14-44-34_43_point.csv', '../../har_data/jump/2021_12_24/raw/lk_jump__2021-12-24-14-30-10_60_point.csv', '../../har_data/jump/2021_12_24/raw/lxy_jump__2021-12-24-14-14-57_58_point.csv', '../../har_data/jump/2021_12_24/raw/lk_jump__2021-12-24-14-29-49_51_point.csv', '../../har_data/jump/2021_12_24/raw/sym_jump__2021-12-24-14-46-02_41_point.csv', '../../har_data/jump/2021_12_24/raw/lhb_jump__2021-12-24-17-22-33_54_point.csv', '../../har_data/jump/2021_12_24/raw/sym_jump__2021-12-24-14-45-19_51_point.csv', '../../har_data/jump/2021_12_24/raw/lk_jump__2021-12-24-14-31-08_27_point.csv', '../../har_data/jump/2021_12_24/raw/lhb_jump__2021-12-24-17-22-42_54_point.csv', '../../har_data/jump/2021_12_24/raw/sym_jump__2021-12-24-14-45-41_46_point.csv', '../../har_data/jump/2021_12_24/raw/lk_jump__2021-12-24-14-29-56_66_point.csv', '../../har_data/jump/2021_12_24/raw/lk_jump__2021-12-24-14-29-24_65_point.csv', '../../har_data/jump/2021_12_24/raw/sym_jump__2021-12-24-14-45-36_43_point.csv', '../../har_data/jump/2021_12_24/raw/zxl_jump__2021-12-24-17-31-08_73_point.csv', '../../har_data/jump/2021_12_24/raw/lk_jump__2021-12-24-14-30-15_28_point.csv', '../../har_data/jump/2021_12_24/raw/zxl_jump__2021-12-24-17-31-34_51_point.csv', '../../har_data/jump/2021_12_24/raw/lxy_jump__2021-12-24-14-16-31_46_point.csv', '../../har_data/jump/2021_12_24/raw/lxy_jump__2021-12-24-14-15-12_36_point.csv', '../../har_data/jump/2021_12_24/raw/lhb_jump__2021-12-24-17-21-59_42_point.csv', '../../har_data/jump/2021_12_24/raw/zxl_jump__2021-12-24-17-31-49_72_point.csv', '../../har_data/jump/2021_12_24/raw/lxy_jump__2021-12-24-14-16-08_60_point.csv', '../../har_data/jump/2021_12_24/raw/lhb_jump__2021-12-24-17-22-14_64_point.csv', '../../har_data/jump/2021_12_24/raw/lk_jump__2021-12-24-14-29-30_28_point.csv', '../../har_data/jump/2021_12_24/raw/zxl_jump__2021-12-24-17-31-58_60_point.csv', '../../har_data/jump/2021_12_24/raw/sym_jump__2021-12-24-14-45-09_45_point.csv', '../../har_data/jump/2021_12_24/raw/lxy_jump__2021-12-24-14-16-38_44_point.csv', '../../har_data/jump/2021_12_24/raw/lxy_jump__2021-12-24-14-17-26_39_point.csv', '../../har_data/jump/2021_12_24/raw/lk_jump__2021-12-24-14-30-23_43_point.csv', '../../har_data/jump/2021_12_24/raw/lxy_jump__2021-12-24-14-16-14_29_point.csv', '../../har_data/jump/2021_12_24/raw/zxl_jump__2021-12-24-17-31-24_51_point.csv', '../../har_data/jump/2021_12_24/raw/zxl_jump__2021-12-24-17-31-02_45_point.csv', '../../har_data/sit/2021_12_07/raw/lxy_sit__2021-12-07-16-48-09_89_point.csv', '../../har_data/sit/2021_12_24/raw/lk_sit__2021-12-24-14-28-32_88_point.csv', '../../har_data/sit/2021_12_24/raw/sym_sit__2021-12-24-14-49-11_62_point.csv', '../../har_data/sit/2021_12_24/raw/lxy_sit__2021-12-24-14-07-22_94_point.csv', '../../har_data/sit/2021_12_24/raw/sym_sit__2021-12-24-14-51-58_50_point.csv', '../../har_data/sit/2021_11_30/raw/lhb_sit__2021-11-30-17-19-03_87_point.csv', '../../har_data/sit/2021_12_07/raw/lxy_sit__2021-12-07-16-47-04_82_point.csv', '../../har_data/sit/2021_11_30/raw/lhb_sit__2021-11-30-17-20-46_101_point.csv', '../../har_data/sit/2021_12_24/raw/sym_sit__2021-12-24-14-52-41_55_point.csv', '../../har_data/sit/2021_12_24/raw/lxy_sit__2021-12-24-14-03-16_92_point.csv', '../../har_data/sit/2021_12_07/raw/lk_sit__2021-12-07-17-08-27_71_point.csv', '../../har_data/sit/2021_12_24/raw/sym_sit__2021-12-24-14-48-44_66_point.csv', '../../har_data/sit/2021_11_30/raw/lk_sit__2021-11-30-17-48-19_67_point.csv', '../../har_data/sit/2021_11_30/raw/lhb_sit__2021-11-30-17-18-52_82_point.csv', '../../har_data/sit/2021_11_30/raw/lhb_sit__2021-11-30-17-19-26_64_point.csv', '../../har_data/sit/2021_12_07/raw/lk_sit__2021-12-07-17-07-22_71_point.csv', '../../har_data/sit/2021_11_30/raw/lk_sit__2021-11-30-17-47-07_77_point.csv', '../../har_data/sit/2021_11_30/raw/lhb_sit__2021-11-30-17-20-17_74_point.csv', '../../har_data/sit/2021_12_07/raw/zxl_sit__2021-12-07-17-19-07_86_point.csv', '../../har_data/sit/2021_11_30/raw/lhb_sit__2021-11-30-17-19-35_88_point.csv', '../../har_data/sit/2021_11_30/raw/lhb_sit__2021-11-30-17-21-04_98_point.csv', '../../har_data/sit/2021_11_30/raw/lhb_sit__2021-11-30-17-18-43_123_point.csv', '../../har_data/sit/2021_12_24/raw/lk_sit__2021-12-24-14-25-52_105_point.csv', '../../har_data/sit/2021_12_07/raw/zxl_sit__2021-12-07-17-18-42_70_point.csv', '../../har_data/sit/2021_12_07/raw/lk_sit__2021-12-07-17-08-42_77_point.csv', '../../har_data/sit/2021_12_24/raw/sym_sit__2021-12-24-14-50-02_47_point.csv', '../../har_data/sit/2021_12_24/raw/lxy_sit__2021-12-24-14-02-36_89_point.csv', '../../har_data/sit/2021_12_24/raw/lk_sit__2021-12-24-14-27-38_29_point.csv', '../../har_data/sit/2021_12_07/raw/lk_sit__2021-12-07-17-08-51_87_point.csv', '../../har_data/sit/2021_12_24/raw/lk_sit__2021-12-24-14-27-53_52_point.csv', '../../har_data/sit/2021_11_30/raw/lk_sit__2021-11-30-17-47-54_75_point.csv', '../../har_data/sit/2021_12_07/raw/lk_sit__2021-12-07-17-08-59_81_point.csv', '../../har_data/sit/2021_11_30/raw/sym_sit__2021-11-30-17-31-46_117_point.csv', '../../har_data/sit/2021_12_24/raw/lxy_sit__2021-12-24-14-09-23_80_point.csv', '../../har_data/sit/2021_12_24/raw/lk_sit__2021-12-24-14-26-36_80_point.csv', '../../har_data/sit/2021_12_24/raw/lk_sit__2021-12-24-14-23-56_55_point.csv', '../../har_data/sit/2021_12_07/raw/zxl_sit__2021-12-07-17-16-32_62_point.csv', '../../har_data/sit/2021_12_07/raw/lk_sit__2021-12-07-17-08-19_85_point.csv', '../../har_data/sit/2021_12_24/raw/sym_sit__2021-12-24-14-48-58_71_point.csv', '../../har_data/sit/2021_12_24/raw/sym_sit__2021-12-24-14-50-32_44_point.csv', '../../har_data/sit/2021_12_07/raw/lxy_sit__2021-12-07-16-46-04_102_point.csv', '../../har_data/sit/2021_12_07/raw/lxy_sit__2021-12-07-16-47-25_79_point.csv', '../../har_data/sit/2021_12_07/raw/zxl_sit__2021-12-07-17-18-16_81_point.csv', '../../har_data/sit/2021_11_30/raw/sym_sit__2021-11-30-17-32-18_71_point.csv', '../../har_data/sit/2021_12_24/raw/sym_sit__2021-12-24-14-49-24_53_point.csv', '../../har_data/sit/2021_11_30/raw/sym_sit__2021-11-30-17-31-09_95_point.csv', '../../har_data/sit/2021_11_30/raw/sym_sit__2021-11-30-17-30-37_23_point.csv', '../../har_data/sit/2021_12_07/raw/lk_sit__2021-12-07-17-09-15_66_point.csv', '../../har_data/sit/2021_11_30/raw/lhb_sit__2021-11-30-17-20-55_100_point.csv', '../../har_data/sit/2021_12_24/raw/lk_sit__2021-12-24-14-26-21_19_point.csv', '../../har_data/sit/2021_12_24/raw/sym_sit__2021-12-24-14-51-28_59_point.csv', '../../har_data/sit/2021_12_24/raw/lk_sit__2021-12-24-14-24-12_67_point.csv', '../../har_data/sit/2021_11_30/raw/sym_sit__2021-11-30-17-32-08_96_point.csv', '../../har_data/sit/2021_12_07/raw/lxy_sit__2021-12-07-16-43-30_168_point.csv', '../../har_data/sit/2021_12_24/raw/sym_sit__2021-12-24-14-52-27_64_point.csv', '../../har_data/sit/2021_12_07/raw/lxy_sit__2021-12-07-16-46-13_74_point.csv', '../../har_data/sit/2021_12_24/raw/lk_sit__2021-12-24-14-25-04_80_point.csv', '../../har_data/sit/2021_11_30/raw/lk_sit__2021-11-30-17-47-32_84_point.csv', '../../har_data/sit/2021_12_07/raw/lxy_sit__2021-12-07-16-46-25_62_point.csv', '../../har_data/sit/2021_11_30/raw/lk_sit__2021-11-30-17-48-02_65_point.csv', '../../har_data/sit/2021_11_30/raw/lk_sit__2021-11-30-17-47-47_67_point.csv', '../../har_data/sit/2021_11_30/raw/sym_sit__2021-11-30-17-32-52_70_point.csv', '../../har_data/sit/2021_12_07/raw/lxy_sit__2021-12-07-16-47-51_75_point.csv', '../../har_data/sit/2021_11_30/raw/lk_sit__2021-11-30-17-48-27_69_point.csv', '../../har_data/sit/2021_11_30/raw/sym_sit__2021-11-30-17-32-44_98_point.csv', '../../har_data/sit/2021_12_07/raw/lxy_sit__2021-12-07-16-46-45_106_point.csv', '../../har_data/sit/2021_12_07/raw/lxy_sit__2021-12-07-16-47-42_79_point.csv', '../../har_data/sit/2021_12_24/raw/lk_sit__2021-12-24-14-25-36_79_point.csv', '../../har_data/sit/2021_12_24/raw/lk_sit__2021-12-24-14-27-22_61_point.csv', '../../har_data/sit/2021_12_24/raw/lxy_sit__2021-12-24-14-07-39_119_point.csv', '../../har_data/sit/2021_11_30/raw/sym_sit__2021-11-30-17-31-57_87_point.csv', '../../har_data/sit/2021_12_07/raw/lk_sit__2021-12-07-17-08-10_77_point.csv', '../../har_data/sit/2021_12_07/raw/lxy_sit__2021-12-07-16-47-35_94_point.csv', '../../har_data/sit/2021_12_07/raw/lk_sit__2021-12-07-17-07-44_76_point.csv', '../../har_data/sit/2021_12_07/raw/zxl_sit__2021-12-07-17-18-59_50_point.csv', '../../har_data/sit/2021_12_07/raw/lk_sit__2021-12-07-17-07-51_70_point.csv', '../../har_data/sit/2021_12_07/raw/zxl_sit__2021-12-07-17-19-16_72_point.csv', '../../har_data/sit/2021_12_24/raw/lxy_sit__2021-12-24-14-02-55_89_point.csv', '../../har_data/sit/2021_11_30/raw/lhb_sit__2021-11-30-17-20-08_70_point.csv', '../../har_data/sit/2021_11_30/raw/sym_sit__2021-11-30-17-30-55_98_point.csv', '../../har_data/sit/2021_12_07/raw/zxl_sit__2021-12-07-17-19-26_80_point.csv', '../../har_data/sit/2021_12_24/raw/sym_sit__2021-12-24-14-50-17_55_point.csv', '../../har_data/sit/2021_12_24/raw/lxy_sit__2021-12-24-14-07-57_111_point.csv', '../../har_data/sit/2021_12_07/raw/zxl_sit__2021-12-07-17-16-14_125_point.csv', '../../har_data/sit/2021_12_07/raw/lxy_sit__2021-12-07-16-43-11_175_point.csv', '../../har_data/sit/2021_12_24/raw/lk_sit__2021-12-24-14-23-42_61_point.csv', '../../har_data/sit/2021_12_07/raw/zxl_sit__2021-12-07-17-18-34_78_point.csv', '../../har_data/sit/2021_11_30/raw/sym_sit__2021-11-30-17-30-35_87_point.csv', '../../har_data/sit/2021_12_24/raw/sym_sit__2021-12-24-14-50-47_66_point.csv', '../../har_data/sit/2021_11_30/raw/lhb_sit__2021-11-30-17-19-43_76_point.csv', '../../har_data/sit/2021_12_07/raw/lk_sit__2021-12-07-17-07-36_65_point.csv', '../../har_data/sit/2021_11_30/raw/lhb_sit__2021-11-30-17-20-02_114_point.csv', '../../har_data/sit/2021_12_07/raw/zxl_sit__2021-12-07-17-18-25_84_point.csv', '../../har_data/sit/2021_12_07/raw/zxl_sit__2021-12-07-17-24-02_73_point.csv', '../../har_data/sit/2021_11_30/raw/sym_sit__2021-11-30-17-32-59_62_point.csv', '../../har_data/sit/2021_12_24/raw/sym_sit__2021-12-24-14-51-00_66_point.csv', '../../har_data/sit/2021_12_24/raw/lxy_sit__2021-12-24-14-03-35_67_point.csv', '../../har_data/sit/2021_11_30/raw/lk_sit__2021-11-30-17-47-40_82_point.csv', '../../har_data/sit/2021_11_30/raw/lk_sit__2021-11-30-17-47-15_84_point.csv', '../../har_data/sit/2021_12_24/raw/sym_sit__2021-12-24-14-52-13_64_point.csv', '../../har_data/sit/2021_11_30/raw/lhb_sit__2021-11-30-17-19-52_90_point.csv', '../../har_data/sit/2021_11_30/raw/lk_sit__2021-11-30-17-48-36_72_point.csv', '../../har_data/sit/2021_12_24/raw/sym_sit__2021-12-24-14-48-31_56_point.csv', '../../har_data/sit/2021_12_24/raw/lxy_sit__2021-12-24-14-06-49_80_point.csv', '../../har_data/sit/2021_12_07/raw/zxl_sit__2021-12-07-17-24-19_64_point.csv', '../../har_data/sit/2021_12_24/raw/lk_sit__2021-12-24-14-23-13_64_point.csv', '../../har_data/sit/2021_12_07/raw/lxy_sit__2021-12-07-16-48-17_60_point.csv', '../../har_data/sit/2021_12_24/raw/lxy_sit__2021-12-24-14-08-36_91_point.csv', '../../har_data/sit/2021_11_30/raw/lk_sit__2021-11-30-17-46-41_148_point.csv', '../../har_data/sit/2021_11_30/raw/sym_sit__2021-11-30-17-32-35_77_point.csv', '../../har_data/sit/2021_12_24/raw/lxy_sit__2021-12-24-14-08-51_90_point.csv', '../../har_data/fall/2021_12_07/raw/lk_fall__2021-12-07-17-06-35_116_point.csv', '../../har_data/fall/2021_12_07/raw/lk_fall__2021-12-07-17-05-10_71_point.csv', '../../har_data/fall/2021_12_07/raw/zxl_fall__2021-12-07-17-30-07_58_point.csv', '../../har_data/fall/2021_12_07/raw/lxy_fall__2021-12-07-16-54-41_88_point.csv', '../../har_data/fall/2021_12_24/raw/zxl_fall__2021-12-24-17-28-52_61_point.csv', '../../har_data/fall/2021_12_24/raw/lhb_fall__2021-12-24-17-17-46_76_point.csv', '../../har_data/fall/2021_12_07/raw/lxy_fall__2021-12-07-16-55-40_74_point.csv', '../../har_data/fall/2021_12_24/raw/lhb_fall__2021-12-24-17-14-04_140_point.csv', '../../har_data/fall/2021_12_24/raw/lhb_fall__2021-12-24-17-14-55_93_point.csv', '../../har_data/fall/2021_12_07/raw/lk_fall__2021-12-07-17-04-19_79_point.csv', '../../har_data/fall/2021_12_07/raw/lxy_fall__2021-12-07-16-54-13_76_point.csv', '../../har_data/fall/2021_12_07/raw/lk_fall__2021-12-07-17-04-09_112_point.csv', '../../har_data/fall/2021_12_07/raw/lxy_fall__2021-12-07-16-56-07_76_point.csv', '../../har_data/fall/2021_12_07/raw/lk_fall__2021-12-07-17-03-57_82_point.csv', '../../har_data/fall/2021_12_24/raw/lhb_fall__2021-12-24-17-18-48_65_point.csv', '../../har_data/fall/2021_12_24/raw/zxl_fall__2021-12-24-17-28-38_44_point.csv', '../../har_data/fall/2021_12_07/raw/lk_fall__2021-12-07-17-05-43_86_point.csv', '../../har_data/fall/2021_12_24/raw/zxl_fall__2021-12-24-17-29-54_54_point.csv', '../../har_data/fall/2021_12_24/raw/zxl_fall__2021-12-24-17-28-10_56_point.csv', '../../har_data/fall/2021_12_24/raw/zxl_fall__2021-12-24-17-27-25_40_point.csv', '../../har_data/fall/2021_12_24/raw/zxl_fall__2021-12-24-17-30-09_67_point.csv', '../../har_data/fall/2021_12_07/raw/lk_fall__2021-12-07-17-05-53_66_point.csv', '../../har_data/fall/2021_12_07/raw/lk_fall__2021-12-07-17-06-23_82_point.csv', '../../har_data/fall/2021_12_07/raw/zxl_fall__2021-12-07-17-30-16_70_point.csv', '../../har_data/fall/2021_12_24/raw/lhb_fall__2021-12-24-17-18-15_75_point.csv', '../../har_data/fall/2021_12_07/raw/lxy_fall__2021-12-07-16-54-54_74_point.csv', '../../har_data/fall/2021_12_07/raw/lxy_fall__2021-12-07-16-55-18_222_point.csv', '../../har_data/fall/2021_12_24/raw/zxl_fall__2021-12-24-17-30-24_53_point.csv', '../../har_data/fall/2021_12_07/raw/lxy_fall__2021-12-07-16-53-46_99_point.csv', '../../har_data/fall/2021_12_07/raw/zxl_fall__2021-12-07-17-30-52_79_point.csv', '../../har_data/fall/2021_12_24/raw/lhb_fall__2021-12-24-17-15-39_66_point.csv', '../../har_data/fall/2021_12_07/raw/zxl_fall__2021-12-07-17-30-35_64_point.csv', '../../har_data/fall/2021_12_24/raw/zxl_fall__2021-12-24-17-27-41_63_point.csv', '../../har_data/fall/2021_12_07/raw/lk_fall__2021-12-07-17-06-03_68_point.csv', '../../har_data/fall/2021_12_07/raw/lk_fall__2021-12-07-17-05-01_70_point.csv', '../../har_data/fall/2021_12_07/raw/lk_fall__2021-12-07-17-03-47_63_point.csv', '../../har_data/fall/2021_12_07/raw/zxl_fall__2021-12-07-17-28-37_74_point.csv', '../../har_data/fall/2021_12_24/raw/lhb_fall__2021-12-24-17-15-25_78_point.csv', '../../har_data/fall/2021_12_07/raw/lk_fall__2021-12-07-17-04-31_103_point.csv', '../../har_data/fall/2021_12_24/raw/zxl_fall__2021-12-24-17-29-28_60_point.csv', '../../har_data/fall/2021_12_24/raw/zxl_fall__2021-12-24-17-26-07_68_point.csv', '../../har_data/fall/2021_12_24/raw/zxl_fall__2021-12-24-17-26-46_54_point.csv', '../../har_data/fall/2021_12_07/raw/lxy_fall__2021-12-07-16-55-55_100_point.csv', '../../har_data/fall/2021_12_24/raw/lhb_fall__2021-12-24-17-16-15_69_point.csv', '../../har_data/fall/2021_12_07/raw/lxy_fall__2021-12-07-16-53-31_100_point.csv', '../../har_data/fall/2021_12_24/raw/lhb_fall__2021-12-24-17-17-16_68_point.csv', '../../har_data/fall/2021_12_24/raw/zxl_fall__2021-12-24-17-26-33_48_point.csv', '../../har_data/fall/2021_12_07/raw/zxl_fall__2021-12-07-17-31-27_62_point.csv', '../../har_data/fall/2021_12_07/raw/zxl_fall__2021-12-07-17-25-02_74_point.csv', '../../har_data/fall/2021_12_24/raw/lhb_fall__2021-12-24-17-15-57_74_point.csv', '../../har_data/fall/2021_12_07/raw/zxl_fall__2021-12-07-17-31-18_72_point.csv', '../../har_data/fall/2021_12_24/raw/zxl_fall__2021-12-24-17-29-41_52_point.csv', '../../har_data/fall/2021_12_24/raw/zxl_fall__2021-12-24-17-27-13_52_point.csv', '../../har_data/fall/2021_12_24/raw/lhb_fall__2021-12-24-17-18-01_71_point.csv', '../../har_data/fall/2021_12_07/raw/zxl_fall__2021-12-07-17-31-01_71_point.csv', '../../har_data/fall/2021_12_24/raw/lhb_fall__2021-12-24-17-16-32_74_point.csv', '../../har_data/fall/2021_12_07/raw/lxy_fall__2021-12-07-16-54-27_88_point.csv', '../../har_data/fall/2021_12_07/raw/zxl_fall__2021-12-07-17-29-58_58_point.csv', '../../har_data/fall/2021_12_07/raw/lxy_fall__2021-12-07-16-54-00_99_point.csv', '../../har_data/fall/2021_12_24/raw/lhb_fall__2021-12-24-17-17-00_66_point.csv', '../../har_data/fall/2021_12_07/raw/lk_fall__2021-12-07-17-04-53_42_point.csv', '../../har_data/fall/2021_12_07/raw/zxl_fall__2021-12-07-17-30-26_66_point.csv', '../../har_data/run/2021_12_24/raw/sym_run__2021-12-24-14-47-31_100_point.csv', '../../har_data/run/2021_12_24/raw/sym_run__2021-12-24-14-47-30_100_point.csv', '../../har_data/run/2021_12_24/raw/sym_run__2021-12-24-14-47-32_100_point.csv', '../../har_data/run/2021_12_24/raw/sym_run__2021-12-24-14-47-33_100_point.csv', '../../har_data/run/2021_12_24/raw/sym_run__2021-12-24-14-47-30_657_point.csv', '../../har_data/run/2021_12_24/raw/lk_run__2021-12-24-14-39-31_100_point.csv', '../../har_data/run/2021_12_24/raw/lk_run__2021-12-24-14-39-32_100_point.csv', '../../har_data/run/2021_12_24/raw/lk_run__2021-12-24-14-39-33_100_point.csv', '../../har_data/run/2021_12_24/raw/sym_run__2021-12-24-14-47-34_100_point.csv', '../../har_data/walk/2021_11_30/raw/sym_walk__2021-11-30-17-34-48_1639_point.csv', '../../har_data/walk/2021_11_30/raw/lk_walk__2021-11-30-17-49-45_1108_point.csv', '../../har_data/walk/2021_12_07/raw/lxy_walk__2021-12-07-16-52-21_1128_point.csv', '../../har_data/walk/2021_11_30/raw/lhb_walk__2021-11-30-17-23-17_1766_point.csv', '../../har_data/bend/2021_12_24/raw/lxy_bend__2021-12-24-14-10-26_71_point.csv', '../../har_data/bend/2021_12_24/raw/lk_bend__2021-12-24-14-32-51_84_point.csv', '../../har_data/bend/2021_12_24/raw/lhb_bend__2021-12-24-17-21-47_80_point.csv', '../../har_data/bend/2021_12_24/raw/sym_bend__2021-12-24-14-55-27_61_point.csv', '../../har_data/bend/2021_12_24/raw/lk_bend__2021-12-24-14-33-27_59_point.csv', '../../har_data/bend/2021_12_24/raw/lxy_bend__2021-12-24-14-11-05_81_point.csv', '../../har_data/bend/2021_12_24/raw/lhb_bend__2021-12-24-17-20-09_59_point.csv', '../../har_data/bend/2021_12_24/raw/lk_bend__2021-12-24-14-32-31_58_point.csv', '../../har_data/bend/2021_12_24/raw/lxy_bend__2021-12-24-14-12-22_75_point.csv', '../../har_data/bend/2021_12_24/raw/lxy_bend__2021-12-24-14-10-46_73_point.csv', '../../har_data/bend/2021_12_24/raw/lhb_bend__2021-12-24-17-20-02_70_point.csv', '../../har_data/bend/2021_12_24/raw/lk_bend__2021-12-24-14-32-23_56_point.csv', '../../har_data/bend/2021_12_24/raw/sym_bend__2021-12-24-14-54-11_60_point.csv', '../../har_data/bend/2021_12_24/raw/lhb_bend__2021-12-24-17-21-40_62_point.csv', '../../har_data/bend/2021_12_24/raw/lk_bend__2021-12-24-14-34-35_63_point.csv', '../../har_data/bend/2021_12_24/raw/lxy_bend__2021-12-24-14-12-42_69_point.csv', '../../har_data/bend/2021_12_24/raw/zxl_bend__2021-12-24-17-33-03_53_point.csv', '../../har_data/bend/2021_12_24/raw/zxl_bend__2021-12-24-17-33-59_61_point.csv', '../../har_data/bend/2021_12_24/raw/lxy_bend__2021-12-24-14-14-08_76_point.csv', '../../har_data/bend/2021_12_24/raw/lk_bend__2021-12-24-14-31-45_58_point.csv', '../../har_data/bend/2021_12_24/raw/lxy_bend__2021-12-24-14-12-12_83_point.csv', '../../har_data/bend/2021_12_24/raw/zxl_bend__2021-12-24-17-33-46_68_point.csv', '../../har_data/bend/2021_12_24/raw/lhb_bend__2021-12-24-17-19-54_68_point.csv', '../../har_data/bend/2021_12_24/raw/lk_bend__2021-12-24-14-32-04_61_point.csv', '../../har_data/bend/2021_12_24/raw/lhb_bend__2021-12-24-17-21-15_59_point.csv', '../../har_data/bend/2021_12_24/raw/sym_bend__2021-12-24-14-55-19_64_point.csv', '../../har_data/bend/2021_12_24/raw/zxl_bend__2021-12-24-17-33-17_64_point.csv', '../../har_data/bend/2021_12_24/raw/sym_bend__2021-12-24-14-53-30_42_point.csv', '../../har_data/bend/2021_12_24/raw/sym_bend__2021-12-24-14-54-33_68_point.csv', '../../har_data/bend/2021_12_24/raw/lk_bend__2021-12-24-14-34-18_59_point.csv', '../../har_data/bend/2021_12_24/raw/lxy_bend__2021-12-24-14-13-32_67_point.csv', '../../har_data/bend/2021_12_24/raw/zxl_bend__2021-12-24-17-33-53_65_point.csv', '../../har_data/bend/2021_12_24/raw/sym_bend__2021-12-24-14-54-41_68_point.csv', '../../har_data/bend/2021_12_24/raw/lk_bend__2021-12-24-14-33-10_80_point.csv', '../../har_data/bend/2021_12_24/raw/zxl_bend__2021-12-24-17-33-23_53_point.csv', '../../har_data/bend/2021_12_24/raw/zxl_bend__2021-12-24-17-32-37_45_point.csv', '../../har_data/bend/2021_12_24/raw/lxy_bend__2021-12-24-14-13-59_66_point.csv', '../../har_data/bend/2021_12_24/raw/lk_bend__2021-12-24-14-33-20_76_point.csv', '../../har_data/bend/2021_12_24/raw/sym_bend__2021-12-24-14-53-37_53_point.csv', '../../har_data/bend/2021_12_24/raw/lhb_bend__2021-12-24-17-20-32_61_point.csv', '../../har_data/bend/2021_12_24/raw/lxy_bend__2021-12-24-14-13-15_65_point.csv', '../../har_data/bend/2021_12_24/raw/sym_bend__2021-12-24-14-55-11_55_point.csv', '../../har_data/bend/2021_12_24/raw/zxl_bend__2021-12-24-17-32-50_51_point.csv', '../../har_data/bend/2021_12_24/raw/sym_bend__2021-12-24-14-55-42_27_point.csv', '../../har_data/bend/2021_12_24/raw/sym_bend__2021-12-24-14-54-03_65_point.csv', '../../har_data/bend/2021_12_24/raw/lhb_bend__2021-12-24-17-20-54_61_point.csv', '../../har_data/bend/2021_12_24/raw/zxl_bend__2021-12-24-17-32-56_48_point.csv', '../../har_data/bend/2021_12_24/raw/sym_bend__2021-12-24-14-54-49_60_point.csv', '../../har_data/bend/2021_12_24/raw/sym_bend__2021-12-24-14-55-04_52_point.csv', '../../har_data/bend/2021_12_24/raw/lhb_bend__2021-12-24-17-20-47_58_point.csv', '../../har_data/bend/2021_12_24/raw/sym_bend__2021-12-24-14-53-55_56_point.csv', '../../har_data/bend/2021_12_24/raw/sym_bend__2021-12-24-14-54-25_66_point.csv', '../../har_data/bend/2021_12_24/raw/lhb_bend__2021-12-24-17-21-32_67_point.csv', '../../har_data/bend/2021_12_24/raw/lk_bend__2021-12-24-14-34-10_59_point.csv', '../../har_data/bend/2021_12_24/raw/zxl_bend__2021-12-24-17-33-10_58_point.csv', '../../har_data/bend/2021_12_24/raw/lxy_bend__2021-12-24-14-12-33_82_point.csv', '../../har_data/bend/2021_12_24/raw/sym_bend__2021-12-24-14-55-51_74_point.csv', '../../har_data/bend/2021_12_24/raw/lxy_bend__2021-12-24-14-13-41_66_point.csv', '../../har_data/bend/2021_12_24/raw/zxl_bend__2021-12-24-17-33-38_64_point.csv', '../../har_data/bend/2021_12_24/raw/zxl_bend__2021-12-24-17-33-31_60_point.csv', '../../har_data/bend/2021_12_24/raw/lxy_bend__2021-12-24-14-10-16_51_point.csv', '../../har_data/bend/2021_12_24/raw/lhb_bend__2021-12-24-17-21-02_68_point.csv', '../../har_data/bend/2021_12_24/raw/sym_bend__2021-12-24-14-54-56_63_point.csv', '../../har_data/bend/2021_12_24/raw/lk_bend__2021-12-24-14-33-37_70_point.csv', '../../har_data/bend/2021_12_24/raw/lhb_bend__2021-12-24-17-20-39_58_point.csv', '../../har_data/bend/2021_12_24/raw/lxy_bend__2021-12-24-14-13-49_58_point.csv', '../../har_data/bend/2021_12_24/raw/zxl_bend__2021-12-24-17-32-44_56_point.csv', '../../har_data/bend/2021_12_24/raw/sym_bend__2021-12-24-14-53-44_62_point.csv']
+2022-03-03 00:17:22,844 - Model - INFO - test_files_point:['../../har_data/stand/2021_12_24/raw/lhb_stand__2021-12-24-17-17-38_71_point.csv', '../../har_data/stand/2021_12_24/raw/zxl_stand__2021-12-24-17-27-49_83_point.csv', '../../har_data/stand/2021_12_24/raw/sym_stand__2021-12-24-14-50-53_47_point.csv', '../../har_data/stand/2021_12_24/raw/zxl_stand__2021-12-24-17-27-19_68_point.csv', '../../har_data/stand/2021_12_24/raw/lhb_stand__2021-12-24-17-17-53_73_point.csv', '../../har_data/stand/2021_12_24/raw/zxl_stand__2021-12-24-17-30-17_73_point.csv', '../../har_data/stand/2021_12_24/raw/lhb_stand__2021-12-24-17-16-23_101_point.csv', '../../har_data/stand/2021_12_24/raw/lk_stand__2021-12-24-14-26-28_76_point.csv', '../../har_data/stand/2021_12_24/raw/sym_stand__2021-12-24-14-51-20_45_point.csv', '../../har_data/stand/2021_12_24/raw/lhb_stand__2021-12-24-17-18-34_64_point.csv', '../../har_data/stand/2021_12_24/raw/lxy_stand__2021-12-24-14-09-30_73_point.csv', '../../har_data/stand/2021_12_24/raw/sym_stand__2021-12-24-14-49-55_33_point.csv', '../../har_data/stand/2021_12_24/raw/zxl_stand__2021-12-24-17-26-26_60_point.csv', '../../har_data/stand/2021_12_24/raw/sym_stand__2021-12-24-14-48-37_58_point.csv', '../../har_data/stand/2021_12_24/raw/zxl_stand__2021-12-24-17-30-43_58_point.csv', '../../har_data/stand/2021_12_24/raw/lhb_stand__2021-12-24-17-18-08_76_point.csv', '../../har_data/stand/2021_12_24/raw/lxy_stand__2021-12-24-14-08-59_73_point.csv', '../../har_data/stand/2021_12_24/raw/zxl_stand__2021-12-24-17-30-32_84_point.csv', '../../har_data/stand/2021_12_24/raw/sym_stand__2021-12-24-14-52-20_41_point.csv', '../../har_data/stand/2021_12_24/raw/sym_stand__2021-12-24-14-49-29_46_point.csv', '../../har_data/stand/2021_12_24/raw/lxy_stand__2021-12-24-14-06-59_70_point.csv', '../../har_data/stand/2021_12_24/raw/lk_stand__2021-12-24-14-23-35_60_point.csv', '../../har_data/stand/2021_12_24/raw/lxy_stand__2021-12-24-14-06-39_80_point.csv', '../../har_data/stand/2021_12_24/raw/lk_stand__2021-12-24-14-28-02_48_point.csv', '../../har_data/jump/2021_12_24/raw/lhb_jump__2021-12-24-17-22-04_61_point.csv', '../../har_data/jump/2021_12_24/raw/lxy_jump__2021-12-24-14-16-54_54_point.csv', '../../har_data/jump/2021_12_24/raw/lhb_jump__2021-12-24-17-22-38_61_point.csv', '../../har_data/jump/2021_12_24/raw/lhb_jump__2021-12-24-17-22-47_59_point.csv', '../../har_data/jump/2021_12_24/raw/sym_jump__2021-12-24-14-45-46_55_point.csv', '../../har_data/jump/2021_12_24/raw/lhb_jump__2021-12-24-17-22-23_67_point.csv', '../../har_data/jump/2021_12_24/raw/lxy_jump__2021-12-24-14-15-20_63_point.csv', '../../har_data/jump/2021_12_24/raw/lk_jump__2021-12-24-14-29-43_67_point.csv', '../../har_data/jump/2021_12_24/raw/lxy_jump__2021-12-24-14-15-36_66_point.csv', '../../har_data/jump/2021_12_24/raw/lk_jump__2021-12-24-14-30-54_31_point.csv', '../../har_data/jump/2021_12_24/raw/sym_jump__2021-12-24-14-45-57_48_point.csv', '../../har_data/jump/2021_12_24/raw/lhb_jump__2021-12-24-17-22-09_69_point.csv', '../../har_data/jump/2021_12_24/raw/lxy_jump__2021-12-24-14-15-55_75_point.csv', '../../har_data/jump/2021_12_24/raw/lhb_jump__2021-12-24-17-23-06_57_point.csv', '../../har_data/jump/2021_12_24/raw/lxy_jump__2021-12-24-14-16-47_48_point.csv', '../../har_data/jump/2021_12_24/raw/zxl_jump__2021-12-24-17-31-29_50_point.csv', '../../har_data/jump/2021_12_24/raw/zxl_jump__2021-12-24-17-31-53_37_point.csv', '../../har_data/jump/2021_12_24/raw/sym_jump__2021-12-24-14-44-44_32_point.csv', '../../har_data/jump/2021_12_24/raw/sym_jump__2021-12-24-14-44-20_46_point.csv', '../../har_data/jump/2021_12_24/raw/lk_jump__2021-12-24-14-30-47_87_point.csv', '../../har_data/jump/2021_12_24/raw/sym_jump__2021-12-24-14-45-14_45_point.csv', '../../har_data/jump/2021_12_24/raw/sym_jump__2021-12-24-14-45-51_47_point.csv', '../../har_data/sit/2021_12_24/raw/lxy_sit__2021-12-24-14-09-08_100_point.csv', '../../har_data/sit/2021_11_30/raw/lk_sit__2021-11-30-17-48-11_95_point.csv', '../../har_data/sit/2021_11_30/raw/sym_sit__2021-11-30-17-32-27_68_point.csv', '../../har_data/sit/2021_12_07/raw/zxl_sit__2021-12-07-17-19-35_80_point.csv', '../../har_data/sit/2021_11_30/raw/sym_sit__2021-11-30-17-31-34_88_point.csv', '../../har_data/sit/2021_12_07/raw/zxl_sit__2021-12-07-17-24-10_70_point.csv', '../../har_data/sit/2021_12_24/raw/sym_sit__2021-12-24-14-51-14_44_point.csv', '../../har_data/sit/2021_11_30/raw/lk_sit__2021-11-30-17-47-00_90_point.csv', '../../har_data/sit/2021_12_24/raw/lxy_sit__2021-12-24-14-07-08_80_point.csv', '../../har_data/sit/2021_12_24/raw/lk_sit__2021-12-24-14-26-52_64_point.csv', '../../har_data/sit/2021_12_24/raw/sym_sit__2021-12-24-14-49-38_52_point.csv', '../../har_data/sit/2021_11_30/raw/sym_sit__2021-11-30-17-33-08_73_point.csv', '../../har_data/sit/2021_12_24/raw/sym_sit__2021-12-24-14-52-54_69_point.csv', '../../har_data/sit/2021_11_30/raw/lk_sit__2021-11-30-17-47-24_79_point.csv', '../../har_data/sit/2021_12_07/raw/lxy_sit__2021-12-07-16-46-35_89_point.csv', '../../har_data/sit/2021_11_30/raw/lhb_sit__2021-11-30-17-20-36_93_point.csv', '../../har_data/sit/2021_12_24/raw/lk_sit__2021-12-24-14-25-18_64_point.csv', '../../har_data/sit/2021_12_24/raw/lk_sit__2021-12-24-14-24-49_64_point.csv', '../../har_data/sit/2021_12_07/raw/lxy_sit__2021-12-07-16-46-55_89_point.csv', '../../har_data/sit/2021_12_24/raw/sym_sit__2021-12-24-14-49-50_50_point.csv', '../../har_data/sit/2021_12_24/raw/lk_sit__2021-12-24-14-23-29_53_point.csv', '../../har_data/sit/2021_12_07/raw/lxy_sit__2021-12-07-16-48-00_70_point.csv', '../../har_data/sit/2021_12_07/raw/lxy_sit__2021-12-07-16-47-13_89_point.csv', '../../har_data/sit/2021_11_30/raw/lhb_sit__2021-11-30-17-20-27_115_point.csv', '../../har_data/sit/2021_12_07/raw/lk_sit__2021-12-07-17-07-29_54_point.csv', '../../har_data/sit/2021_12_24/raw/lxy_sit__2021-12-24-14-08-15_107_point.csv', '../../har_data/sit/2021_12_07/raw/lk_sit__2021-12-07-17-08-35_83_point.csv', '../../har_data/sit/2021_11_30/raw/lk_sit__2021-11-30-17-46-50_60_point.csv', '../../har_data/sit/2021_12_24/raw/lk_sit__2021-12-24-14-27-07_77_point.csv', '../../har_data/sit/2021_12_24/raw/sym_sit__2021-12-24-14-48-18_43_point.csv', '../../har_data/sit/2021_12_24/raw/lxy_sit__2021-12-24-14-02-46_93_point.csv', '../../har_data/sit/2021_12_24/raw/lk_sit__2021-12-24-14-24-35_70_point.csv', '../../har_data/sit/2021_11_30/raw/sym_sit__2021-11-30-17-31-20_80_point.csv', '../../har_data/sit/2021_12_07/raw/zxl_sit__2021-12-07-17-18-50_67_point.csv', '../../har_data/sit/2021_12_24/raw/lk_sit__2021-12-24-14-26-07_80_point.csv', '../../har_data/sit/2021_12_07/raw/lk_sit__2021-12-07-17-08-03_63_point.csv', '../../har_data/sit/2021_12_07/raw/lk_sit__2021-12-07-17-09-08_79_point.csv', '../../har_data/fall/2021_12_07/raw/lk_fall__2021-12-07-17-05-20_81_point.csv', '../../har_data/fall/2021_12_24/raw/zxl_fall__2021-12-24-17-27-56_70_point.csv', '../../har_data/fall/2021_12_07/raw/lk_fall__2021-12-07-17-05-31_60_point.csv', '../../har_data/fall/2021_12_24/raw/lhb_fall__2021-12-24-17-19-02_65_point.csv', '../../har_data/fall/2021_12_24/raw/zxl_fall__2021-12-24-17-27-00_61_point.csv', '../../har_data/fall/2021_12_07/raw/lk_fall__2021-12-07-17-06-13_76_point.csv', '../../har_data/fall/2021_12_07/raw/zxl_fall__2021-12-07-17-25-12_69_point.csv', '../../har_data/fall/2021_12_24/raw/zxl_fall__2021-12-24-17-29-06_64_point.csv', '../../har_data/fall/2021_12_24/raw/lhb_fall__2021-12-24-17-15-10_66_point.csv', '../../har_data/fall/2021_12_24/raw/lhb_fall__2021-12-24-17-18-26_63_point.csv', '../../har_data/fall/2021_12_07/raw/zxl_fall__2021-12-07-17-30-43_82_point.csv', '../../har_data/fall/2021_12_07/raw/zxl_fall__2021-12-07-17-31-10_70_point.csv', '../../har_data/fall/2021_12_24/raw/lhb_fall__2021-12-24-17-14-38_80_point.csv', '../../har_data/fall/2021_12_24/raw/zxl_fall__2021-12-24-17-28-25_66_point.csv', '../../har_data/fall/2021_12_24/raw/lhb_fall__2021-12-24-17-17-31_64_point.csv', '../../har_data/fall/2021_12_24/raw/lhb_fall__2021-12-24-17-14-22_71_point.csv', '../../har_data/fall/2021_12_07/raw/zxl_fall__2021-12-07-17-24-53_61_point.csv', '../../har_data/fall/2021_12_07/raw/lxy_fall__2021-12-07-16-56-55_140_point.csv', '../../har_data/fall/2021_12_24/raw/lhb_fall__2021-12-24-17-16-46_68_point.csv', '../../har_data/fall/2021_12_24/raw/zxl_fall__2021-12-24-17-26-20_44_point.csv', '../../har_data/fall/2021_12_24/raw/zxl_fall__2021-12-24-17-30-37_48_point.csv', '../../har_data/run/2021_12_24/raw/lk_run__2021-12-24-14-39-29_600_point.csv', '../../har_data/run/2021_12_24/raw/lk_run__2021-12-24-14-39-29_100_point.csv', '../../har_data/run/2021_12_24/raw/lk_run__2021-12-24-14-39-30_100_point.csv', '../../har_data/walk/2021_12_07/raw/zxl_walk__2021-12-07-17-23-43_910_point.csv', '../../har_data/bend/2021_12_24/raw/sym_bend__2021-12-24-14-55-34_40_point.csv', '../../har_data/bend/2021_12_24/raw/lxy_bend__2021-12-24-14-10-36_68_point.csv', '../../har_data/bend/2021_12_24/raw/lk_bend__2021-12-24-14-33-54_84_point.csv', '../../har_data/bend/2021_12_24/raw/lhb_bend__2021-12-24-17-21-08_73_point.csv', '../../har_data/bend/2021_12_24/raw/lk_bend__2021-12-24-14-33-00_67_point.csv', '../../har_data/bend/2021_12_24/raw/sym_bend__2021-12-24-14-55-58_59_point.csv', '../../har_data/bend/2021_12_24/raw/zxl_bend__2021-12-24-17-32-30_58_point.csv', '../../har_data/bend/2021_12_24/raw/lk_bend__2021-12-24-14-34-01_49_point.csv', '../../har_data/bend/2021_12_24/raw/sym_bend__2021-12-24-14-54-18_49_point.csv', '../../har_data/bend/2021_12_24/raw/lk_bend__2021-12-24-14-31-53_53_point.csv', '../../har_data/bend/2021_12_24/raw/lhb_bend__2021-12-24-17-20-15_59_point.csv', '../../har_data/bend/2021_12_24/raw/lxy_bend__2021-12-24-14-12-01_61_point.csv', '../../har_data/bend/2021_12_24/raw/lk_bend__2021-12-24-14-34-51_56_point.csv', '../../har_data/bend/2021_12_24/raw/zxl_bend__2021-12-24-17-32-22_32_point.csv', '../../har_data/bend/2021_12_24/raw/lk_bend__2021-12-24-14-34-26_71_point.csv', '../../har_data/bend/2021_12_24/raw/lk_bend__2021-12-24-14-33-45_42_point.csv', '../../har_data/bend/2021_12_24/raw/lk_bend__2021-12-24-14-34-44_75_point.csv', '../../har_data/bend/2021_12_24/raw/lxy_bend__2021-12-24-14-13-23_61_point.csv', '../../har_data/bend/2021_12_24/raw/lk_bend__2021-12-24-14-32-40_40_point.csv', '../../har_data/bend/2021_12_24/raw/lxy_bend__2021-12-24-14-13-05_63_point.csv', '../../har_data/bend/2021_12_24/raw/lxy_bend__2021-12-24-14-10-56_74_point.csv', '../../har_data/bend/2021_12_24/raw/lhb_bend__2021-12-24-17-21-25_59_point.csv', '../../har_data/bend/2021_12_24/raw/lxy_bend__2021-12-24-14-12-57_68_point.csv']
+2022-03-03 00:17:22,845 - Model - INFO - ../../har_dataset/train_20_3_stand_jump_sit_fall_run_walk_bend.h5 was founded.
+2022-03-03 00:17:22,845 - Model - INFO - The order of act is:['stand', 'jump', 'sit', 'fall', 'run', 'walk', 'bend']
+2022-03-03 00:18:13,407 - Model - INFO - No existing model, starting training from scratch...
+2022-03-03 00:18:13,407 - Model - INFO - Start training...
+2022-03-03 00:18:13,407 - Model - INFO - Epoch 1 (1/60):
+2022-03-03 00:52:06,084 - Model - INFO - Train Instance Accuracy: 0.590137
+2022-03-03 00:54:54,120 - Model - INFO - Test Instance Accuracy: 0.685871, Class Accuracy: 0.604960
+2022-03-03 00:54:54,121 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[10.34346982 11.          0.94031544]
+ [10.61193673 12.          0.88432806]
+ [ 9.68954978 12.          0.80746248]
+ [ 5.29452481 12.          0.4412104 ]
+ [ 0.         11.          0.        ]
+ [11.36258832 12.          0.94688236]
+ [ 2.5742651  12.          0.21452209]]
+2022-03-03 00:54:54,121 - Model - INFO - Best Instance Accuracy: 0.685871, Class Accuracy: 0.604960
+2022-03-03 00:54:54,121 - Model - INFO - Save model...
+2022-03-03 00:54:54,121 - Model - INFO - Saving at log/classification/2022-03-03_00-17/checkpoints/best_model.pth
+2022-03-03 00:54:54,235 - Model - INFO - Epoch 2 (2/60):
+2022-03-03 01:28:20,133 - Model - INFO - Train Instance Accuracy: 0.800879
+2022-03-03 01:31:06,882 - Model - INFO - Test Instance Accuracy: 0.626662, Class Accuracy: 0.538595
+2022-03-03 01:31:06,883 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[10.34346982 11.          0.94031544]
+ [10.61193673 12.          0.88432806]
+ [ 9.68954978 12.          0.80746248]
+ [ 5.29452481 12.          0.4412104 ]
+ [ 0.         11.          0.        ]
+ [11.36258832 12.          0.94688236]
+ [ 2.5742651  12.          0.21452209]]
+2022-03-03 01:31:06,883 - Model - INFO - Best Instance Accuracy: 0.685871, Class Accuracy: 0.604960
+2022-03-03 01:31:07,199 - Model - INFO - Epoch 3 (3/60):
+2022-03-03 02:03:42,016 - Model - INFO - Train Instance Accuracy: 0.859015
+2022-03-03 02:06:29,163 - Model - INFO - Test Instance Accuracy: 0.665485, Class Accuracy: 0.591227
+2022-03-03 02:06:29,164 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[10.34346982 11.          0.94031544]
+ [10.61193673 12.          0.88432806]
+ [ 9.68954978 12.          0.80746248]
+ [ 5.29452481 12.          0.4412104 ]
+ [ 0.         11.          0.        ]
+ [11.36258832 12.          0.94688236]
+ [ 2.5742651  12.          0.21452209]]
+2022-03-03 02:06:29,164 - Model - INFO - Best Instance Accuracy: 0.685871, Class Accuracy: 0.604960
+2022-03-03 02:06:29,226 - Model - INFO - Epoch 4 (4/60):
+2022-03-03 02:39:36,322 - Model - INFO - Train Instance Accuracy: 0.887153
+2022-03-03 02:42:20,067 - Model - INFO - Test Instance Accuracy: 0.753235, Class Accuracy: 0.712124
+2022-03-03 02:42:20,068 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[ 9.85094378 11.          0.89554034]
+ [ 4.78869495 12.          0.39905791]
+ [10.57970394 12.          0.881642  ]
+ [ 6.62727691 12.          0.55227308]
+ [ 7.18773686 11.          0.65343062]
+ [10.31968496 12.          0.85997375]
+ [ 8.91539113 12.          0.74294926]]
+2022-03-03 02:42:20,068 - Model - INFO - Best Instance Accuracy: 0.753235, Class Accuracy: 0.712124
+2022-03-03 02:42:20,068 - Model - INFO - Save model...
+2022-03-03 02:42:20,069 - Model - INFO - Saving at log/classification/2022-03-03_00-17/checkpoints/best_model.pth
+2022-03-03 02:42:20,198 - Model - INFO - Epoch 5 (5/60):
+2022-03-03 03:15:34,335 - Model - INFO - Train Instance Accuracy: 0.903938
+2022-03-03 03:18:25,800 - Model - INFO - Test Instance Accuracy: 0.658039, Class Accuracy: 0.569874
+2022-03-03 03:18:25,801 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[ 9.85094378 11.          0.89554034]
+ [ 4.78869495 12.          0.39905791]
+ [10.57970394 12.          0.881642  ]
+ [ 6.62727691 12.          0.55227308]
+ [ 7.18773686 11.          0.65343062]
+ [10.31968496 12.          0.85997375]
+ [ 8.91539113 12.          0.74294926]]
+2022-03-03 03:18:25,801 - Model - INFO - Best Instance Accuracy: 0.753235, Class Accuracy: 0.712124
+2022-03-03 03:18:25,883 - Model - INFO - Epoch 6 (6/60):
+2022-03-03 03:51:00,866 - Model - INFO - Train Instance Accuracy: 0.915409
+2022-03-03 03:53:40,830 - Model - INFO - Test Instance Accuracy: 0.711753, Class Accuracy: 0.653727
+2022-03-03 03:53:40,830 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[ 9.85094378 11.          0.89554034]
+ [ 4.78869495 12.          0.39905791]
+ [10.57970394 12.          0.881642  ]
+ [ 6.62727691 12.          0.55227308]
+ [ 7.18773686 11.          0.65343062]
+ [10.31968496 12.          0.85997375]
+ [ 8.91539113 12.          0.74294926]]
+2022-03-03 03:53:40,830 - Model - INFO - Best Instance Accuracy: 0.753235, Class Accuracy: 0.712124
+2022-03-03 03:53:40,907 - Model - INFO - Epoch 7 (7/60):
+2022-03-03 04:26:56,086 - Model - INFO - Train Instance Accuracy: 0.922571
+2022-03-03 04:29:35,905 - Model - INFO - Test Instance Accuracy: 0.825917, Class Accuracy: 0.829625
+2022-03-03 04:29:35,906 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[10.0541433  12.          0.83784528]
+ [10.02559777 12.          0.83546648]
+ [10.51755267 12.          0.87646272]
+ [ 7.33372447 12.          0.61114371]
+ [10.52551998 11.          0.95686545]
+ [11.64809739 12.          0.97067478]
+ [ 8.62701004 12.          0.7189175 ]]
+2022-03-03 04:29:35,906 - Model - INFO - Best Instance Accuracy: 0.825917, Class Accuracy: 0.829625
+2022-03-03 04:29:35,906 - Model - INFO - Save model...
+2022-03-03 04:29:35,906 - Model - INFO - Saving at log/classification/2022-03-03_00-17/checkpoints/best_model.pth
+2022-03-03 04:29:36,551 - Model - INFO - Epoch 8 (8/60):
+2022-03-03 05:02:54,056 - Model - INFO - Train Instance Accuracy: 0.942559
+2022-03-03 05:05:37,777 - Model - INFO - Test Instance Accuracy: 0.825208, Class Accuracy: 0.788401
+2022-03-03 05:05:37,778 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[10.0541433  12.          0.83784528]
+ [10.02559777 12.          0.83546648]
+ [10.51755267 12.          0.87646272]
+ [ 7.33372447 12.          0.61114371]
+ [10.52551998 11.          0.95686545]
+ [11.64809739 12.          0.97067478]
+ [ 8.62701004 12.          0.7189175 ]]
+2022-03-03 05:05:37,778 - Model - INFO - Best Instance Accuracy: 0.825917, Class Accuracy: 0.829625
+2022-03-03 05:05:37,832 - Model - INFO - Epoch 9 (9/60):
+2022-03-03 05:38:38,208 - Model - INFO - Train Instance Accuracy: 0.943510
+2022-03-03 05:41:17,891 - Model - INFO - Test Instance Accuracy: 0.847899, Class Accuracy: 0.835463
+2022-03-03 05:41:17,892 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[10.44064381 12.          0.87005365]
+ [10.33944908 12.          0.86162076]
+ [10.58889673 12.          0.88240806]
+ [ 7.84898125 12.          0.65408177]
+ [11.26478533 12.          0.93873211]
+ [11.94942542 12.          0.99578545]
+ [ 7.74667875 12.          0.64555656]]
+2022-03-03 05:41:17,892 - Model - INFO - Best Instance Accuracy: 0.847899, Class Accuracy: 0.835463
+2022-03-03 05:41:17,892 - Model - INFO - Save model...
+2022-03-03 05:41:17,892 - Model - INFO - Saving at log/classification/2022-03-03_00-17/checkpoints/best_model.pth
+2022-03-03 05:41:18,425 - Model - INFO - Epoch 10 (10/60):
+2022-03-03 06:14:34,055 - Model - INFO - Train Instance Accuracy: 0.957074
+2022-03-03 06:17:19,346 - Model - INFO - Test Instance Accuracy: 0.851622, Class Accuracy: 0.854346
+2022-03-03 06:17:19,347 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.26293406 12.          0.93857784]
+ [10.91147272 12.          0.90928939]
+ [10.12544984 12.          0.84378749]
+ [ 7.92283479 11.          0.72025771]
+ [ 9.95114215 11.          0.90464929]
+ [11.81129401 12.          0.9842745 ]
+ [ 8.15500808 12.          0.67958401]]
+2022-03-03 06:17:19,347 - Model - INFO - Best Instance Accuracy: 0.851622, Class Accuracy: 0.854346
+2022-03-03 06:17:19,347 - Model - INFO - Save model...
+2022-03-03 06:17:19,347 - Model - INFO - Saving at log/classification/2022-03-03_00-17/checkpoints/best_model.pth
+2022-03-03 06:17:19,472 - Model - INFO - Epoch 11 (11/60):
+2022-03-03 06:52:01,762 - Model - INFO - Train Instance Accuracy: 0.966451
+2022-03-03 06:56:21,472 - Model - INFO - Test Instance Accuracy: 0.683744, Class Accuracy: 0.648763
+2022-03-03 06:56:21,472 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.26293406 12.          0.93857784]
+ [10.91147272 12.          0.90928939]
+ [10.12544984 12.          0.84378749]
+ [ 7.92283479 11.          0.72025771]
+ [ 9.95114215 11.          0.90464929]
+ [11.81129401 12.          0.9842745 ]
+ [ 8.15500808 12.          0.67958401]]
+2022-03-03 06:56:21,472 - Model - INFO - Best Instance Accuracy: 0.851622, Class Accuracy: 0.854346
+2022-03-03 06:56:21,551 - Model - INFO - Epoch 12 (12/60):
+2022-03-03 07:32:40,041 - Model - INFO - Train Instance Accuracy: 0.966204
+2022-03-03 07:35:24,395 - Model - INFO - Test Instance Accuracy: 0.864740, Class Accuracy: 0.852824
+2022-03-03 07:35:24,396 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[10.69257318 12.          0.89104777]
+ [ 9.17313211 12.          0.76442768]
+ [11.00557142 12.          0.91713095]
+ [ 8.60628828 12.          0.71719069]
+ [10.26869664 11.          0.93351788]
+ [11.33495531 12.          0.94457961]
+ [ 8.82061035 11.          0.80187367]]
+2022-03-03 07:35:24,396 - Model - INFO - Best Instance Accuracy: 0.864740, Class Accuracy: 0.854346
+2022-03-03 07:35:24,396 - Model - INFO - Save model...
+2022-03-03 07:35:24,396 - Model - INFO - Saving at log/classification/2022-03-03_00-17/checkpoints/best_model.pth
+2022-03-03 07:35:24,985 - Model - INFO - Epoch 13 (13/60):
+2022-03-03 07:54:07,773 - Model - INFO - Train Instance Accuracy: 0.974213
+2022-03-03 07:54:30,496 - Model - INFO - Test Instance Accuracy: 0.827690, Class Accuracy: 0.816138
+2022-03-03 07:54:30,497 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[10.69257318 12.          0.89104777]
+ [ 9.17313211 12.          0.76442768]
+ [11.00557142 12.          0.91713095]
+ [ 8.60628828 12.          0.71719069]
+ [10.26869664 11.          0.93351788]
+ [11.33495531 12.          0.94457961]
+ [ 8.82061035 11.          0.80187367]]
+2022-03-03 07:54:30,497 - Model - INFO - Best Instance Accuracy: 0.864740, Class Accuracy: 0.854346
+2022-03-03 07:54:30,542 - Model - INFO - Epoch 14 (14/60):
+2022-03-03 08:00:28,836 - Model - INFO - Train Instance Accuracy: 0.976655
+2022-03-03 08:00:51,861 - Model - INFO - Test Instance Accuracy: 0.816699, Class Accuracy: 0.790079
+2022-03-03 08:00:51,862 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[10.69257318 12.          0.89104777]
+ [ 9.17313211 12.          0.76442768]
+ [11.00557142 12.          0.91713095]
+ [ 8.60628828 12.          0.71719069]
+ [10.26869664 11.          0.93351788]
+ [11.33495531 12.          0.94457961]
+ [ 8.82061035 11.          0.80187367]]
+2022-03-03 08:00:51,862 - Model - INFO - Best Instance Accuracy: 0.864740, Class Accuracy: 0.854346
+2022-03-03 08:00:51,909 - Model - INFO - Epoch 15 (15/60):
+2022-03-03 08:06:48,008 - Model - INFO - Train Instance Accuracy: 0.977411
+2022-03-03 08:07:10,892 - Model - INFO - Test Instance Accuracy: 0.783726, Class Accuracy: 0.746220
+2022-03-03 08:07:10,892 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[10.69257318 12.          0.89104777]
+ [ 9.17313211 12.          0.76442768]
+ [11.00557142 12.          0.91713095]
+ [ 8.60628828 12.          0.71719069]
+ [10.26869664 11.          0.93351788]
+ [11.33495531 12.          0.94457961]
+ [ 8.82061035 11.          0.80187367]]
+2022-03-03 08:07:10,892 - Model - INFO - Best Instance Accuracy: 0.864740, Class Accuracy: 0.854346
+2022-03-03 08:07:10,942 - Model - INFO - Epoch 16 (16/60):
+2022-03-03 08:13:03,774 - Model - INFO - Train Instance Accuracy: 0.979665
+2022-03-03 08:13:27,086 - Model - INFO - Test Instance Accuracy: 0.804113, Class Accuracy: 0.760527
+2022-03-03 08:13:27,086 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[10.69257318 12.          0.89104777]
+ [ 9.17313211 12.          0.76442768]
+ [11.00557142 12.          0.91713095]
+ [ 8.60628828 12.          0.71719069]
+ [10.26869664 11.          0.93351788]
+ [11.33495531 12.          0.94457961]
+ [ 8.82061035 11.          0.80187367]]
+2022-03-03 08:13:27,086 - Model - INFO - Best Instance Accuracy: 0.864740, Class Accuracy: 0.854346
+2022-03-03 08:13:27,136 - Model - INFO - Epoch 17 (17/60):
+2022-03-03 08:19:26,097 - Model - INFO - Train Instance Accuracy: 0.980186
+2022-03-03 08:19:50,636 - Model - INFO - Test Instance Accuracy: 0.864208, Class Accuracy: 0.874030
+2022-03-03 08:19:50,636 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[10.69257318 12.          0.89104777]
+ [ 9.17313211 12.          0.76442768]
+ [11.00557142 12.          0.91713095]
+ [ 8.60628828 12.          0.71719069]
+ [10.26869664 11.          0.93351788]
+ [11.33495531 12.          0.94457961]
+ [ 8.82061035 11.          0.80187367]]
+2022-03-03 08:19:50,636 - Model - INFO - Best Instance Accuracy: 0.864740, Class Accuracy: 0.874030
+2022-03-03 08:19:50,678 - Model - INFO - Epoch 18 (18/60):
+2022-03-03 08:25:46,867 - Model - INFO - Train Instance Accuracy: 0.983538
+2022-03-03 08:26:07,249 - Model - INFO - Test Instance Accuracy: 0.859599, Class Accuracy: 0.859415
+2022-03-03 08:26:07,250 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[10.69257318 12.          0.89104777]
+ [ 9.17313211 12.          0.76442768]
+ [11.00557142 12.          0.91713095]
+ [ 8.60628828 12.          0.71719069]
+ [10.26869664 11.          0.93351788]
+ [11.33495531 12.          0.94457961]
+ [ 8.82061035 11.          0.80187367]]
+2022-03-03 08:26:07,250 - Model - INFO - Best Instance Accuracy: 0.864740, Class Accuracy: 0.874030
+2022-03-03 08:26:07,293 - Model - INFO - Epoch 19 (19/60):
+2022-03-03 08:32:03,850 - Model - INFO - Train Instance Accuracy: 0.981967
+2022-03-03 08:32:26,828 - Model - INFO - Test Instance Accuracy: 0.835490, Class Accuracy: 0.844845
+2022-03-03 08:32:26,829 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[10.69257318 12.          0.89104777]
+ [ 9.17313211 12.          0.76442768]
+ [11.00557142 12.          0.91713095]
+ [ 8.60628828 12.          0.71719069]
+ [10.26869664 11.          0.93351788]
+ [11.33495531 12.          0.94457961]
+ [ 8.82061035 11.          0.80187367]]
+2022-03-03 08:32:26,829 - Model - INFO - Best Instance Accuracy: 0.864740, Class Accuracy: 0.874030
+2022-03-03 08:32:26,873 - Model - INFO - Epoch 20 (20/60):
+2022-03-03 08:38:24,839 - Model - INFO - Train Instance Accuracy: 0.988990
+2022-03-03 08:38:47,920 - Model - INFO - Test Instance Accuracy: 0.845417, Class Accuracy: 0.844973
+2022-03-03 08:38:47,921 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[10.69257318 12.          0.89104777]
+ [ 9.17313211 12.          0.76442768]
+ [11.00557142 12.          0.91713095]
+ [ 8.60628828 12.          0.71719069]
+ [10.26869664 11.          0.93351788]
+ [11.33495531 12.          0.94457961]
+ [ 8.82061035 11.          0.80187367]]
+2022-03-03 08:38:47,921 - Model - INFO - Best Instance Accuracy: 0.864740, Class Accuracy: 0.874030
+2022-03-03 08:38:47,969 - Model - INFO - Epoch 21 (21/60):
+2022-03-03 08:44:44,248 - Model - INFO - Train Instance Accuracy: 0.990056
+2022-03-03 08:45:07,003 - Model - INFO - Test Instance Accuracy: 0.871654, Class Accuracy: 0.869496
+2022-03-03 08:45:07,004 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 08:45:07,004 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874030
+2022-03-03 08:45:07,004 - Model - INFO - Save model...
+2022-03-03 08:45:07,004 - Model - INFO - Saving at log/classification/2022-03-03_00-17/checkpoints/best_model.pth
+2022-03-03 08:45:07,078 - Model - INFO - Epoch 22 (22/60):
+2022-03-03 08:51:00,394 - Model - INFO - Train Instance Accuracy: 0.989918
+2022-03-03 08:51:20,839 - Model - INFO - Test Instance Accuracy: 0.853749, Class Accuracy: 0.857124
+2022-03-03 08:51:20,839 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 08:51:20,839 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874030
+2022-03-03 08:51:20,900 - Model - INFO - Epoch 23 (23/60):
+2022-03-03 08:57:16,292 - Model - INFO - Train Instance Accuracy: 0.993002
+2022-03-03 08:57:37,001 - Model - INFO - Test Instance Accuracy: 0.852154, Class Accuracy: 0.868848
+2022-03-03 08:57:37,001 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 08:57:37,001 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874030
+2022-03-03 08:57:37,051 - Model - INFO - Epoch 24 (24/60):
+2022-03-03 09:03:22,943 - Model - INFO - Train Instance Accuracy: 0.993604
+2022-03-03 09:03:43,554 - Model - INFO - Test Instance Accuracy: 0.860663, Class Accuracy: 0.867551
+2022-03-03 09:03:43,554 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 09:03:43,554 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874030
+2022-03-03 09:03:43,577 - Model - INFO - Epoch 25 (25/60):
+2022-03-03 09:09:35,034 - Model - INFO - Train Instance Accuracy: 0.993092
+2022-03-03 09:09:55,591 - Model - INFO - Test Instance Accuracy: 0.780890, Class Accuracy: 0.742177
+2022-03-03 09:09:55,592 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 09:09:55,592 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874030
+2022-03-03 09:09:55,634 - Model - INFO - Epoch 26 (26/60):
+2022-03-03 09:15:51,218 - Model - INFO - Train Instance Accuracy: 0.992213
+2022-03-03 09:16:14,256 - Model - INFO - Test Instance Accuracy: 0.856586, Class Accuracy: 0.846506
+2022-03-03 09:16:14,257 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 09:16:14,257 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874030
+2022-03-03 09:16:14,306 - Model - INFO - Epoch 27 (27/60):
+2022-03-03 09:22:09,993 - Model - INFO - Train Instance Accuracy: 0.991814
+2022-03-03 09:22:32,809 - Model - INFO - Test Instance Accuracy: 0.854281, Class Accuracy: 0.849396
+2022-03-03 09:22:32,810 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 09:22:32,810 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874030
+2022-03-03 09:22:32,843 - Model - INFO - Epoch 28 (28/60):
+2022-03-03 09:28:26,658 - Model - INFO - Train Instance Accuracy: 0.993263
+2022-03-03 09:28:49,514 - Model - INFO - Test Instance Accuracy: 0.854813, Class Accuracy: 0.846056
+2022-03-03 09:28:49,514 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 09:28:49,514 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874030
+2022-03-03 09:28:49,558 - Model - INFO - Epoch 29 (29/60):
+2022-03-03 09:34:47,564 - Model - INFO - Train Instance Accuracy: 0.992253
+2022-03-03 09:35:10,412 - Model - INFO - Test Instance Accuracy: 0.866690, Class Accuracy: 0.874591
+2022-03-03 09:35:10,412 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 09:35:10,412 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 09:35:10,456 - Model - INFO - Epoch 30 (30/60):
+2022-03-03 09:40:55,477 - Model - INFO - Train Instance Accuracy: 0.995508
+2022-03-03 09:41:16,046 - Model - INFO - Test Instance Accuracy: 0.863854, Class Accuracy: 0.872172
+2022-03-03 09:41:16,047 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 09:41:16,047 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 09:41:16,086 - Model - INFO - Epoch 31 (31/60):
+2022-03-03 09:47:15,536 - Model - INFO - Train Instance Accuracy: 0.997665
+2022-03-03 09:47:38,443 - Model - INFO - Test Instance Accuracy: 0.865981, Class Accuracy: 0.842906
+2022-03-03 09:47:38,443 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 09:47:38,443 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 09:47:38,482 - Model - INFO - Epoch 32 (32/60):
+2022-03-03 09:53:26,554 - Model - INFO - Train Instance Accuracy: 0.996590
+2022-03-03 09:53:47,322 - Model - INFO - Test Instance Accuracy: 0.823258, Class Accuracy: 0.822979
+2022-03-03 09:53:47,323 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 09:53:47,323 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 09:53:47,359 - Model - INFO - Epoch 33 (33/60):
+2022-03-03 09:59:31,428 - Model - INFO - Train Instance Accuracy: 0.996289
+2022-03-03 09:59:52,323 - Model - INFO - Test Instance Accuracy: 0.849317, Class Accuracy: 0.864606
+2022-03-03 09:59:52,324 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 09:59:52,324 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 09:59:52,377 - Model - INFO - Epoch 34 (34/60):
+2022-03-03 10:06:47,106 - Model - INFO - Train Instance Accuracy: 0.996648
+2022-03-03 10:07:10,072 - Model - INFO - Test Instance Accuracy: 0.864918, Class Accuracy: 0.869252
+2022-03-03 10:07:10,073 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 10:07:10,073 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 10:07:10,121 - Model - INFO - Epoch 35 (35/60):
+2022-03-03 10:13:04,054 - Model - INFO - Train Instance Accuracy: 0.997917
+2022-03-03 10:13:25,945 - Model - INFO - Test Instance Accuracy: 0.848431, Class Accuracy: 0.852670
+2022-03-03 10:13:25,945 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 10:13:25,945 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 10:13:25,990 - Model - INFO - Epoch 36 (36/60):
+2022-03-03 10:19:19,363 - Model - INFO - Train Instance Accuracy: 0.996550
+2022-03-03 10:19:42,317 - Model - INFO - Test Instance Accuracy: 0.817586, Class Accuracy: 0.804452
+2022-03-03 10:19:42,317 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 10:19:42,318 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 10:19:42,360 - Model - INFO - Epoch 37 (37/60):
+2022-03-03 10:25:46,098 - Model - INFO - Train Instance Accuracy: 0.995533
+2022-03-03 10:26:09,032 - Model - INFO - Test Instance Accuracy: 0.842758, Class Accuracy: 0.838592
+2022-03-03 10:26:09,032 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 10:26:09,032 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 10:26:09,087 - Model - INFO - Epoch 38 (38/60):
+2022-03-03 10:32:04,303 - Model - INFO - Train Instance Accuracy: 0.997119
+2022-03-03 10:32:27,234 - Model - INFO - Test Instance Accuracy: 0.853395, Class Accuracy: 0.856921
+2022-03-03 10:32:27,234 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 10:32:27,234 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 10:32:27,278 - Model - INFO - Epoch 39 (39/60):
+2022-03-03 10:38:20,068 - Model - INFO - Train Instance Accuracy: 0.997567
+2022-03-03 10:38:42,958 - Model - INFO - Test Instance Accuracy: 0.849140, Class Accuracy: 0.856047
+2022-03-03 10:38:42,958 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 10:38:42,958 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 10:38:42,998 - Model - INFO - Epoch 40 (40/60):
+2022-03-03 10:44:38,713 - Model - INFO - Train Instance Accuracy: 0.998242
+2022-03-03 10:45:01,487 - Model - INFO - Test Instance Accuracy: 0.845949, Class Accuracy: 0.857065
+2022-03-03 10:45:01,488 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 10:45:01,488 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 10:45:01,533 - Model - INFO - Epoch 41 (41/60):
+2022-03-03 10:51:03,962 - Model - INFO - Train Instance Accuracy: 0.998486
+2022-03-03 10:51:28,428 - Model - INFO - Test Instance Accuracy: 0.853218, Class Accuracy: 0.867189
+2022-03-03 10:51:28,429 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 10:51:28,429 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 10:51:28,451 - Model - INFO - Epoch 42 (42/60):
+2022-03-03 10:57:28,654 - Model - INFO - Train Instance Accuracy: 0.998535
+2022-03-03 10:57:52,010 - Model - INFO - Test Instance Accuracy: 0.852508, Class Accuracy: 0.868681
+2022-03-03 10:57:52,010 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 10:57:52,010 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 10:57:52,030 - Model - INFO - Epoch 43 (43/60):
+2022-03-03 11:03:50,612 - Model - INFO - Train Instance Accuracy: 0.998690
+2022-03-03 11:04:11,080 - Model - INFO - Test Instance Accuracy: 0.764226, Class Accuracy: 0.697614
+2022-03-03 11:04:11,081 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 11:04:11,081 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 11:04:11,126 - Model - INFO - Epoch 44 (44/60):
+2022-03-03 11:10:03,300 - Model - INFO - Train Instance Accuracy: 0.998682
+2022-03-03 11:10:26,389 - Model - INFO - Test Instance Accuracy: 0.845772, Class Accuracy: 0.858698
+2022-03-03 11:10:26,390 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 11:10:26,390 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 11:10:26,438 - Model - INFO - Epoch 45 (45/60):
+2022-03-03 11:16:18,022 - Model - INFO - Train Instance Accuracy: 0.998454
+2022-03-03 11:16:40,968 - Model - INFO - Test Instance Accuracy: 0.868109, Class Accuracy: 0.866954
+2022-03-03 11:16:40,969 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 11:16:40,969 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 11:16:41,034 - Model - INFO - Epoch 46 (46/60):
+2022-03-03 11:22:31,406 - Model - INFO - Train Instance Accuracy: 0.997030
+2022-03-03 11:22:54,379 - Model - INFO - Test Instance Accuracy: 0.842404, Class Accuracy: 0.852627
+2022-03-03 11:22:54,380 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 11:22:54,380 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 11:22:54,425 - Model - INFO - Epoch 47 (47/60):
+2022-03-03 11:28:52,438 - Model - INFO - Train Instance Accuracy: 0.996395
+2022-03-03 11:29:12,985 - Model - INFO - Test Instance Accuracy: 0.824322, Class Accuracy: 0.829336
+2022-03-03 11:29:12,986 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 11:29:12,986 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 11:29:13,033 - Model - INFO - Epoch 48 (48/60):
+2022-03-03 11:35:07,599 - Model - INFO - Train Instance Accuracy: 0.997461
+2022-03-03 11:35:30,533 - Model - INFO - Test Instance Accuracy: 0.856763, Class Accuracy: 0.864881
+2022-03-03 11:35:30,533 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 11:35:30,533 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 11:35:30,584 - Model - INFO - Epoch 49 (49/60):
+2022-03-03 11:41:26,360 - Model - INFO - Train Instance Accuracy: 0.997705
+2022-03-03 11:41:49,269 - Model - INFO - Test Instance Accuracy: 0.849849, Class Accuracy: 0.859383
+2022-03-03 11:41:49,269 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 11:41:49,269 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 11:41:49,317 - Model - INFO - Epoch 50 (50/60):
+2022-03-03 11:47:46,801 - Model - INFO - Train Instance Accuracy: 0.998389
+2022-03-03 11:48:09,690 - Model - INFO - Test Instance Accuracy: 0.855877, Class Accuracy: 0.866612
+2022-03-03 11:48:09,691 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 11:48:09,691 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 11:48:09,737 - Model - INFO - Epoch 51 (51/60):
+2022-03-03 11:54:05,520 - Model - INFO - Train Instance Accuracy: 0.998975
+2022-03-03 11:54:26,105 - Model - INFO - Test Instance Accuracy: 0.869881, Class Accuracy: 0.869917
+2022-03-03 11:54:26,105 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 11:54:26,105 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 11:54:26,149 - Model - INFO - Epoch 52 (52/60):
+2022-03-03 12:00:14,968 - Model - INFO - Train Instance Accuracy: 0.998544
+2022-03-03 12:00:37,700 - Model - INFO - Test Instance Accuracy: 0.833363, Class Accuracy: 0.817446
+2022-03-03 12:00:37,700 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 12:00:37,701 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 12:00:37,741 - Model - INFO - Epoch 53 (53/60):
+2022-03-03 12:06:27,901 - Model - INFO - Train Instance Accuracy: 0.997900
+2022-03-03 12:06:48,465 - Model - INFO - Test Instance Accuracy: 0.850027, Class Accuracy: 0.859119
+2022-03-03 12:06:48,465 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 12:06:48,465 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 12:06:48,488 - Model - INFO - Epoch 54 (54/60):
+2022-03-03 12:12:43,186 - Model - INFO - Train Instance Accuracy: 0.998641
+2022-03-03 12:13:06,258 - Model - INFO - Test Instance Accuracy: 0.715653, Class Accuracy: 0.638718
+2022-03-03 12:13:06,258 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 12:13:06,258 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 12:13:06,308 - Model - INFO - Epoch 55 (55/60):
+2022-03-03 12:18:58,396 - Model - INFO - Train Instance Accuracy: 0.998836
+2022-03-03 12:19:18,847 - Model - INFO - Test Instance Accuracy: 0.845772, Class Accuracy: 0.856615
+2022-03-03 12:19:18,848 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 12:19:18,848 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874591
+2022-03-03 12:19:18,901 - Model - INFO - Epoch 56 (56/60):
+2022-03-03 12:25:07,461 - Model - INFO - Train Instance Accuracy: 0.998877
+2022-03-03 12:25:28,032 - Model - INFO - Test Instance Accuracy: 0.864208, Class Accuracy: 0.874977
+2022-03-03 12:25:28,033 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 12:25:28,033 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874977
+2022-03-03 12:25:28,081 - Model - INFO - Epoch 57 (57/60):
+2022-03-03 12:31:25,126 - Model - INFO - Train Instance Accuracy: 0.999365
+2022-03-03 12:31:45,764 - Model - INFO - Test Instance Accuracy: 0.854281, Class Accuracy: 0.873652
+2022-03-03 12:31:45,765 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 12:31:45,765 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874977
+2022-03-03 12:31:45,813 - Model - INFO - Epoch 58 (58/60):
+2022-03-03 12:37:40,884 - Model - INFO - Train Instance Accuracy: 0.998926
+2022-03-03 12:38:03,684 - Model - INFO - Test Instance Accuracy: 0.854458, Class Accuracy: 0.862498
+2022-03-03 12:38:03,684 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 12:38:03,684 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874977
+2022-03-03 12:38:03,725 - Model - INFO - Epoch 59 (59/60):
+2022-03-03 12:43:23,961 - Model - INFO - Train Instance Accuracy: 0.998682
+2022-03-03 12:43:37,519 - Model - INFO - Test Instance Accuracy: 0.851799, Class Accuracy: 0.865376
+2022-03-03 12:43:37,520 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 12:43:37,520 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874977
+2022-03-03 12:43:37,540 - Model - INFO - Epoch 60 (60/60):
+2022-03-03 12:47:21,029 - Model - INFO - Train Instance Accuracy: 0.999170
+2022-03-03 12:47:34,223 - Model - INFO - Test Instance Accuracy: 0.855699, Class Accuracy: 0.862041
+2022-03-03 12:47:34,223 - Model - INFO - class_acc_when_best_instance_Acc: 
+[[11.22703448 12.          0.93558621]
+ [ 9.18863622 12.          0.76571968]
+ [10.9495416  12.          0.9124618 ]
+ [ 8.52719067 11.          0.77519915]
+ [10.25746451 11.          0.93249677]
+ [10.27505599 11.          0.934096  ]
+ [ 9.97093954 12.          0.83091163]]
+2022-03-03 12:47:34,224 - Model - INFO - Best Instance Accuracy: 0.871654, Class Accuracy: 0.874977
+2022-03-03 12:47:34,243 - Model - INFO - best_instance_acc_cf is [[ 751    2    6    0   13    0   36]
+ [   3  564   34   37   13    0   64]
+ [   0   72 1422   11    0    0   67]
+ [   0   33   26  536    0   66   33]
+ [   0    9    0    0  216    0    6]
+ [   4    0    0   53    0  827    0]
+ [  18   14   14   71   10    9  601]]
+2022-03-03 12:47:34,244 - Model - INFO - total_correct is:4917
+2022-03-03 12:47:34,941 - Model - INFO - End of training...
