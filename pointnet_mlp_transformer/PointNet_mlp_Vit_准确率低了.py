@@ -37,7 +37,7 @@ from point_transformer.helpers import build_model_with_cfg, named_apply, adapt_i
 from point_transformer.layers import PatchEmbed, Mlp, DropPath, trunc_normal_, lecun_normal_
 from point_transformer.registry import register_model
 
-from pointnet_utils_pn_tf_vit import PointNetEncoder, feature_transform_reguliarzer
+from pointnet_utils_PAT_pnmlp_Trans_tf_vit import PointNetEncoder, feature_transform_reguliarzer
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -257,6 +257,7 @@ class get_loss(torch.nn.Module):
 
     def forward(self, pred, target, trans_feat_array):
         loss = nn.CrossEntropyLoss()(pred, target)
+        # return loss
         # loss = nn.NLLLoss()(pred, target)
         # loss = F.nll_loss(pred, target)
         mat_diff_loss = 0
@@ -268,7 +269,6 @@ class get_loss(torch.nn.Module):
 
         total_loss = loss + mat_diff_loss * self.mat_diff_loss_scale
         return total_loss
-
 
 
 
@@ -286,9 +286,10 @@ class PointNet_Vit(nn.Module):
     #              num_heads=12, mlp_ratio=4., qkv_bias=True, representation_size=None, distilled=False,
     #              drop_rate=0., attn_drop_rate=0., drop_path_rate=0., embed_layer=PatchEmbed, norm_layer=None,
     #              act_layer=None, weight_init=''):
-    def __init__(self, num_layers, hidden_size,seq_len, k = 5, normal_channel = True, model = 'rnn',img_size=224, patch_size=16, in_chans=3, num_classes=8, embed_dim=512, depth=12,
+    def __init__(self, num_classes, seq_len, normal_channel = True,
+                 embed_dim_t = 64, embed_dim=128,  depth=2,
                  num_heads=8, mlp_ratio=4., qkv_bias=True, representation_size=None, distilled=False,
-                 drop_rate=0., attn_drop_rate=0., drop_path_rate=0., embed_layer=PatchEmbed, norm_layer=None,
+                 drop_rate=0., attn_drop_rate=0., drop_path_rate=0., norm_layer=None,
                  act_layer=None, weight_init=''):
         """
         Args:
@@ -321,8 +322,8 @@ class PointNet_Vit(nn.Module):
         norm_layer = norm_layer or partial(nn.LayerNorm, eps=1e-6)
         act_layer = act_layer or nn.GELU
 
-        self.patch_embed = embed_layer(
-            img_size=img_size, patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dim)
+        # self.patch_embed = embed_layer(
+        #     img_size=img_size, patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dim)
         # num_patches = self.patch_embed.num_patches
         num_patches = seq_len
 
@@ -338,6 +339,16 @@ class PointNet_Vit(nn.Module):
                 attn_drop=attn_drop_rate, drop_path=dpr[i], norm_layer=norm_layer, act_layer=act_layer)
             for i in range(depth)])
         self.norm = norm_layer(embed_dim)
+
+        # self.pos_embed_t = nn.Parameter(torch.zeros(1, num_patches , embed_dim_t))
+        self.pos_drop_t = nn.Dropout(p=drop_rate)
+        # dpr_t = [x.item() for x in torch.linspace(0, drop_path_rate, depth)]  # stochastic depth decay rule
+        # self.blocks_t = nn.Sequential(*[
+        #     Block(
+        #         dim=embed_dim_t, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, drop=drop_rate,
+        #         attn_drop=attn_drop_rate, drop_path=dpr_t[i], norm_layer=norm_layer, act_layer=act_layer)
+        #     for i in range(depth_t)])
+        self.norm_t = norm_layer(embed_dim_t)
 
         # Representation layer
         if representation_size and not distilled:
@@ -356,31 +367,53 @@ class PointNet_Vit(nn.Module):
             self.head_dist = nn.Linear(self.embed_dim, self.num_classes) if num_classes > 0 else nn.Identity()
 
         # self.init_weights(weight_init)
+        # self.embed_target = nn.Linear(9, 256)
+        self.embed_target = nn.Sequential(
+                nn.Linear(9, 16),
+                nn.ReLU(),
+                nn.Linear(16, 64),
+                # nn.ReLU(),
+                # nn.Linear(128, 256),
+            )
+        # self.embed_target=nn.Sequential(
+        #         nn.Conv1d(9, 64, 1),
+        #         nn.BatchNorm1d(64),
+        #         nn.ReLU(),
+        #         nn.Conv1d(64, 128, 1),
+        #         nn.BatchNorm1d(128),
+        #         nn.ReLU(),
+        #         nn.Conv1d(128,256,1),
+        #         nn.BatchNorm1d(256)
+        # )
+        self.feat = PointNetEncoder(global_feat=True, feature_transform=True, channel=channel,fea_dim=16,pn_fea_dim=64,stn3d=True)
+        # self.fc1 = nn.Linear(hidden_size, 512)
+        # self.fc2 = nn.Linear(512, 256)
+        # self.fc3 = nn.Linear(256, num_classes)
+        # self.dropout = nn.Dropout(p=0.4)
+        # self.bn1 = nn.BatchNorm1d(512)
+        # self.bn2 = nn.BatchNorm1d(256)
+        # self.relu = nn.ReLU()
 
-        self.feat = PointNetEncoder(global_feat=True, feature_transform=True, channel=channel)
-        self.fc1 = nn.Linear(hidden_size, 512)
-        self.fc2 = nn.Linear(512, 256)
-        self.fc3 = nn.Linear(256, k)
-        self.dropout = nn.Dropout(p=0.4)
-        self.bn1 = nn.BatchNorm1d(512)
-        self.bn2 = nn.BatchNorm1d(256)
-        self.relu = nn.ReLU()
 
-        self.num_layers = num_layers
-        self.hidden_size = hidden_size
-        self.t_input_size = 9
-        self.t_hidden_size = 256
-        self.t_num_layers = 3
-        self.model = model
-        if self.model == 'rnn':
-            self.rnn_target = nn.RNN(self.t_input_size, self.t_hidden_size, self.t_num_layers, batch_first=True)
-            self.rnn = nn.RNN(self.t_hidden_size + 256, hidden_size, num_layers, batch_first=True)
-        elif self.model == 'gru':
-            self.rnn_target = nn.GRU(self.t_input_size, self.t_hidden_size, self.t_num_layers, batch_first=True)
-            self.rnn = nn.GRU(self.t_hidden_size + 256, hidden_size, num_layers, batch_first=True)
-        elif self.model == 'lstm':
-            self.rnn_target = nn.LSTM(self.t_input_size, self.t_hidden_size, self.t_num_layers, batch_first=True)
-            self.rnn = nn.LSTM(self.t_hidden_size + 256, hidden_size, num_layers, batch_first=True)
+
+        # self.num_layers = num_layers
+        # self.hidden_size = hidden_size
+        # self.t_input_size = 9
+        # self.t_hidden_size = 256
+        # self.t_num_layers = 3
+        # self.model = model
+        # if self.model == 'rnn':
+        #     self.rnn_target = nn.RNN(self.t_input_size, self.t_hidden_size, self.t_num_layers, batch_first=True)
+        #     self.rnn = nn.RNN(self.t_hidden_size + 256, hidden_size, num_layers, batch_first=True)
+        # elif self.model == 'gru':
+        #     self.rnn_target = nn.GRU(self.t_input_size, self.t_hidden_size, self.t_num_layers, batch_first=True)
+        #     self.rnn = nn.GRU(self.t_hidden_size + 256, hidden_size, num_layers, batch_first=True)
+        # elif self.model == 'lstm':
+        #     self.rnn_target = nn.LSTM(self.t_input_size, self.t_hidden_size, self.t_num_layers, batch_first=True)
+        #     self.rnn = nn.LSTM(self.t_hidden_size + 256, hidden_size, num_layers, batch_first=True)
+
+        # self.seq2seq_transformer = Seq2Seq_by_Transformer(seq_len)
+
 
     def init_weights(self, mode=''):
         assert mode in ('jax', 'jax_nlhb', 'nlhb', '')
@@ -441,7 +474,7 @@ class PointNet_Vit(nn.Module):
         point_data = point_data.transpose(1,0)  # 从（batch_size, self.seq_len,attriNum)->(self.seq_len, batch_size, attriNum)
         for i, point_sample in enumerate(point_data):
             # Apply pointNet to each frame. point_sample.shape = (batch_size,attriNum, pointNum)
-            point_fea, trans, trans_feat = self.feat(point_sample)  # point_fea.shape = batch_size,1024)
+            point_fea, trans, trans_feat = self.feat(point_sample)  # point_fea.shape = batch_size,1024)  point_sample.shape=]: torch.Size([512, 5, 48])
             if len(sample_fea) == 0:
                 sample_fea = point_fea[np.newaxis, :, :]
                 trans_fea_array = trans_feat[np.newaxis, :, :, :]
@@ -451,19 +484,22 @@ class PointNet_Vit(nn.Module):
                 trans_fea_array = torch.cat((trans_fea_array, trans_feat[np.newaxis, :, :, :]),
                                             0)  # trans_fea_array.shape = (seq_len, batch_size,64,64)
         sample_fea = sample_fea.transpose(0, 1)
-        t_h0 = torch.zeros(self.t_num_layers, target_data.size(0), self.t_hidden_size).to(device)
-        if self.model == 'lstm':
-            t_c0 = torch.zeros(self.t_num_layers, target_data.size(0), self.t_hidden_size).to(device)
-            target_data, _ = self.rnn_target(target_data, (t_h0, t_c0))
-        else:
-            target_data, _ = self.rnn_target(target_data, t_h0)
-        x = torch.cat((target_data, sample_fea), 2).to(device)  # input = torch.cat((target_data, sample_fea), 2).to(device)
+        # target_data=target_data.transpose(1, 2)
+        embeded_target_data = self.embed_target(target_data)
+        # embeded_target_data = embeded_target_data.transpose(1, 2)
+        # embeded_target_data = self.pos_drop_t(embeded_target_data + self.pos_embed_t)
+        # embeded_target_data = self.blocks_t(embeded_target_data)
+        # embeded_target_data = self.norm_t(embeded_target_data)
+
+        x = torch.cat((embeded_target_data, sample_fea), 2).to(device)  # input = torch.cat((target_data, sample_fea), 2).to(device)
         cls_token = self.cls_token.expand(x.shape[0], -1, -1)  # stole cls_tokens impl from Phil Wang, thanks
 
         if self.dist_token is None:
             x = torch.cat((cls_token, x), dim=1)
         else:
             x = torch.cat((cls_token, self.dist_token.expand(x.shape[0], -1, -1), x), dim=1)
+
+
         x = self.pos_drop(x + self.pos_embed)
         x = self.blocks(x)
         x = self.norm(x)
@@ -474,7 +510,7 @@ class PointNet_Vit(nn.Module):
 
 
 
-    def forward(self, point_data, target_data):
+    def forward(self, point_data, target_data):# point_data.shape=[512, 20, 5, 48],target_data.shape=[512, 20, 9]
         # x = self.forward_features(x)
         x,trans_fea_array = self.forward_pn_features(point_data, target_data)
         if self.head_dist is not None:

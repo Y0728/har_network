@@ -2,8 +2,13 @@ import torch.nn as nn
 import torch.utils.data
 import torch.nn.functional as F
 from pointnet_utils import PointNetEncoder, feature_transform_reguliarzer
-
-
+import random
+import numpy as np
+torch.manual_seed(0)
+torch.cuda.manual_seed(0)
+np.random.seed(0)
+random.seed(0)
+torch.backends.cudnn.deterministic = True
 class get_model(nn.Module):
     def __init__(self, k=5, normal_channel=True):
         super(get_model, self).__init__()

@@ -15,20 +15,20 @@ batch_size = 512
 learning_rate = 0.001
 
 input_size = 9 # 28
-sequence_length = 20 # 28
+sequence_length = 10 # 28
 hidden_size = 128
 num_layers = 3
 
 dataDir = "../har_data/"
-activity_list = ['walk', 'sit', 'fall','stand','squat','bend','jump']
+activity_list = ['stand','jump','sit','fall','run','walk','bend']#['walk', 'sit', 'fall','stand','squat','bend','jump']
 
 # data_set = MyDataSet(dataDir, 'target', ['walk', 'sit', 'fall'],sequence_length)
 # data_loader = DataLoader(dataset=data_set, batch_size=batch_size, shuffle=True, drop_last=False)
 
 train_files, test_files = train_test_split(activity_list,'target', dataDir, 0.75)
-train_dataset = HARDataset(dataDir, 'target', activity_list, seq_len = sequence_length, file_list=train_files)
+train_dataset = HARDataset(dataDir, 'target', activity_list, seq_len = sequence_length, file_list=train_files,dataset_type='train')
 train_dataloader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True, drop_last=False)
-test_dataset = HARDataset(dataDir, 'target', activity_list, seq_len = sequence_length, file_list=test_files)
+test_dataset = HARDataset(dataDir, 'target', activity_list, seq_len = sequence_length, file_list=test_files,dataset_type='test')
 test_dataloader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=True, drop_last=False)
 
 print('done')

@@ -28,8 +28,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = BASE_DIR
 sys.path.append(os.path.join(ROOT_DIR, 'models'))
-seqLen = 40
-concat_framNum = 1
+seqLen = 1#40
+concat_framNum = 3 #1
 
 
 torch.manual_seed(0)
@@ -40,12 +40,12 @@ random.seed(0)
 def parse_args():
     '''PARAMETERS'''
     parser = argparse.ArgumentParser('training')
-    parser.add_argument('--use_cpu', action='store_true', default=True, help='use cpu mode')
+    parser.add_argument('--use_cpu', action='store_true', default=False, help='use cpu mode')
     parser.add_argument('--gpu', type=str, default='1', help='specify gpu device')
     parser.add_argument('--batch_size', type=int, default=512, help='batch size in training')
     parser.add_argument('--model', default='pointnet_cls', help='model name [default: pointnet_cls]')
     parser.add_argument('--num_category', default=10, type=int, choices=[10, 40], help='training on ModelNet10/40')
-    parser.add_argument('--epoch', default=50, type=int, help='number of epoch in training')
+    parser.add_argument('--epoch', default=100, type=int, help='number of epoch in training')
     parser.add_argument('--learning_rate', default=0.001, type=float, help='learning rate in training')
     parser.add_argument('--num_point', type=int, default=16 * concat_framNum, help='Point Number')
     parser.add_argument('--optimizer', type=str, default='Adam', help='optimizer for training')
@@ -55,8 +55,8 @@ def parse_args():
     parser.add_argument('--process_data', action='store_true', default=False, help='save data offline')
     parser.add_argument('--use_uniform_sample', action='store_true', default=False, help='use uniform sampling')
     parser.add_argument('--seq_len', default=seqLen, help='default is 10')
-    parser.add_argument('--activity_list', default=['walk','sit','fall', 'run','bend','jump'], help='activity types')
-    parser.add_argument('--concat_frame_num', type=int, default=1,
+    parser.add_argument('--activity_list', default=['stand','jump','sit','fall','run','walk','bend'], help='activity types')  #['walk','sit','fall','run','bend','jump','stand']
+    parser.add_argument('--concat_frame_num', type=int, default=concat_framNum,
                         help='The number of frames that are concatenated together as one sample')
     parser.add_argument('--pointLSTM', default=False, help='Create dataset for lstm if it is true, default is False')
     return parser.parse_args()
@@ -73,7 +73,7 @@ def test(model, loader, num_class=40):
     class_acc = np.zeros((num_class, 3))  # 这里声明了
     classifier = model.eval()
 
-    for j, (points, target) in tqdm(enumerate(loader), total=len(loader)):
+    for j, (points,target) in tqdm(enumerate(loader), total=len(loader)):
 
         if not args.use_cpu:
             points, target = points.cuda(), target.cuda()
@@ -154,13 +154,22 @@ def main(args):
                               file_list=test_files, pointLSTM=args.pointLSTM)
     testDataLoader = DataLoader(dataset=test_dataset, batch_size=args.batch_size, shuffle=True, drop_last=False)
 
+    # train_dataset = HARDataset(data_path, 'PAT', activity_list, concat_framNum=args.concat_frame_num,
+    #                            seq_len=args.seq_len,
+    #                            file_list=train_files, pointLSTM=args.pointLSTM, dataset_type='train')
+    # trainDataLoader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, shuffle=False, drop_last=False)
+    # test_dataset = HARDataset(data_path, 'PAT', activity_list, concat_framNum=args.concat_frame_num,
+    #                           seq_len=args.seq_len,
+    #                           file_list=test_files, pointLSTM=args.pointLSTM, dataset_type='test')
+    # testDataLoader = DataLoader(dataset=test_dataset, batch_size=args.batch_size, shuffle=True, drop_last=False)
+
     # train_dataset = ModelNetDataLoader(root=data_path, args=args, split='train', process_data=args.process_data)
     # test_dataset = ModelNetDataLoader(root=data_path, args=args, split='test', process_data=args.process_data)
     # trainDataLoader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=10, drop_last=True)
     # testDataLoader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=10)
 
     '''MODEL LOADING'''
-    num_class = args.num_category
+    num_class = len(args.activity_list)#args.num_category
     model = importlib.import_module(args.model)
     shutil.copy('./%s.py' % args.model, str(exp_dir))
     # shutil.copy('pointnet2_utils.py', str(exp_dir))

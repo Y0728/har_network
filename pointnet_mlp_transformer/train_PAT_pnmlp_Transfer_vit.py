@@ -4,7 +4,7 @@ Date: Nov 2019
 """
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 import sys
 import torch
@@ -22,8 +22,15 @@ from pathlib import Path
 from tqdm import tqdm
 # from data_utils.ModelNetDataLoader import ModelNetDataLoader
 from torch.utils.data import Dataset, DataLoader
-from har_dataset_train_test_split import train_test_split, HARDataset
+from har_dataset_train_test_split import train_test_split, HARDataset,dataset_exists
 import random
+
+import seaborn as sns
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
+
+from tensorboardX import SummaryWriter
+import datetime as dt
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -42,12 +49,12 @@ torch.backends.cudnn.deterministic = True
 def parse_args():
     '''PARAMETERS'''
     parser = argparse.ArgumentParser('training')
-    parser.add_argument('--use_cpu', action='store_true', default=False, help='use cpu mode')
+    parser.add_argument('--use_cpu', action='store_true', default=True, help='use cpu mode')
     parser.add_argument('--gpu', type=str, default='1', help='specify gpu device')
-    parser.add_argument('--batch_size', type=int, default=256, help='batch size in training')
-    parser.add_argument('--model', default='pointnet_lstm_targetFeaEmbedding', help='model name [default: pointnet_cls]')
-    parser.add_argument('--num_category', default=10, type=int, choices=[10, 40], help='training on ModelNet10/40')
-    parser.add_argument('--epoch', default=50, type=int, help='number of epoch in training')
+    parser.add_argument('--batch_size', type=int, default=512, help='batch size in training')
+    parser.add_argument('--model', default='PointNet_mlp_Vit', help='model name [default: pointnet_cls]')
+    parser.add_argument('--num_category', default=8, type=int, choices=[10, 40], help='training on ModelNet10/40')
+    parser.add_argument('--epoch', default=80, type=int, help='number of epoch in training')
     parser.add_argument('--learning_rate', default=0.001, type=float, help='learning rate in training')
     parser.add_argument('--num_point', type=int, default=32 * concat_framNum, help='Point Number')
     parser.add_argument('--optimizer', type=str, default='Adam', help='optimizer for training')
@@ -57,11 +64,12 @@ def parse_args():
     parser.add_argument('--process_data', action='store_true', default=False, help='save data offline')
     parser.add_argument('--use_uniform_sample', action='store_true', default=False, help='use uniform sampling')
     parser.add_argument('--seq_len', default=seqLen, help='default is 10')
-    parser.add_argument('--activity_list', default=['run','jump','sit','fall','stand','walk','bend'], help='activity types') #['fall', 'run']
+    parser.add_argument('--activity_list', default=['stand','jump','sit','fall','run','walk','bend'], help='activity types') #['fall', 'run']',,,'jump','sit','fall','run','walk','bend'
     parser.add_argument('--concat_frame_num', type=int, default=concat_framNum,
                         help='The number of frames that are concatenated together as one sample')
     parser.add_argument('--pointLSTM', default=True, help='Create dataset for lstm if it is true, default is False')
-    parser.add_argument('--rnn_type', default='lstm', help='The type of recurrent network')
+    parser.add_argument('--rnn_type', default='rnn', help='The type of recurrent network')
+    parser.add_argument('--plot_result_in_tensorboard', default=True, help='Plot the acc and loss in tensorboard')
     return parser.parse_args()
 
 
@@ -76,10 +84,21 @@ def test(model, loader, num_class=40):
     class_acc = np.zeros((num_class, 3))  # 这里声明了
     classifier = model.eval()
 
+    criterion = importlib.import_module(args.model).get_loss()  # 加，为了计算val_loss
+
+    all_preds = torch.tensor([])
+    all_truth = torch.tensor([])
+    total_correct = 0
+
+    if not args.use_cpu:
+        criterion = criterion.cuda()
+    start_time=dt.datetime.now()
+    print(f'The start time is {start_time}')
+    print(f'The num of test samples is {len(loader.dataset)}')
     for j, (points, target, y) in tqdm(enumerate(loader), total=len(loader)):
 
         if not args.use_cpu:
-            points, target, y = points.cuda(), target.cuda(), y.cuda()
+            points, target, y,all_preds,all_truth = points.cuda(), target.cuda(), y.cuda(),all_preds.cuda(),all_truth.cuda()
         if args.pointLSTM == False:
             points = points.transpose(2, 1)
         else:
@@ -89,6 +108,18 @@ def test(model, loader, num_class=40):
         pred, trans_feat = classifier(points, target)
         pred_choice = pred.data.max(1)[1]
 
+        # confusion matrix
+        all_preds = torch.cat(
+            (all_preds, pred_choice)
+            , dim=0
+        )
+        all_truth = torch.cat((
+            all_truth, y
+        ), dim=0)
+
+        # 加，计算val_loss
+        val_loss = criterion(pred, y.long(), trans_feat)
+
         for cat in np.unique(y.cpu()):
             # 表示在当前batch中 y为 cat的这类里边预测正确的个数，calassacc is the number of correct predicts of 类别为cat的 in this batch
             classacc = pred_choice[y == cat].eq(y[y == cat].long().data).cpu().sum()
@@ -97,15 +128,21 @@ def test(model, loader, num_class=40):
 
         correct = pred_choice.eq(y.long().data).cpu().sum()
         mean_correct.append(correct.item() / float(points.size()[0]))
+        total_correct+=correct
+    end_time=dt.datetime.now()
+    print(f'The end time is {end_time}')
+    print(f'time cost is {end_time-start_time}')
 
     # class_acc[:, 2] = class_acc[:, 0] / class_acc[:, 1]    # ori 如果结果不含某一类，这里的分母就会是0，然后整体的acc就得不出来
     class_acc[np.where(class_acc[:, 1] != 0), 2] = class_acc[np.where(class_acc[:, 1] != 0), 0] / class_acc[
         np.where(class_acc[:, 1] != 0), 1]
-    # class_acc = np.mean(class_acc[:, 2])  # ori
-    class_acc = np.mean(class_acc[np.where(class_acc[:, 1] != 0), 2])
-    instance_acc = np.mean(mean_correct)
 
-    return instance_acc, class_acc
+    # instance_acc = np.mean(mean_correct)
+    instance_acc=total_correct/len(loader.dataset)
+
+    cf = confusion_matrix(all_truth.cpu(), all_preds.cpu())
+
+    return instance_acc, class_acc, val_loss,cf,total_correct
 
 
 def main(args):
@@ -131,6 +168,9 @@ def main(args):
     checkpoints_dir.mkdir(exist_ok=True)
     log_dir = exp_dir.joinpath('logs/')
     log_dir.mkdir(exist_ok=True)
+    # dir to save result visualization
+    res_dir = exp_dir.joinpath('result/')
+    res_dir.mkdir(exist_ok=True)
 
     '''LOG'''
     args = parse_args()
@@ -156,7 +196,17 @@ def main(args):
     # data_set = MyDataSet(dataDir, 'target', ['walk', 'sit', 'fall'])
     # data_loader = DataLoad/er(dataset=data_set, batch_size=batch_size, shuffle=True, drop_last=False)
 
-    train_dataset = HARDataset(data_path, 'PAT', activity_list, concat_framNum=args.concat_frame_num,seq_len=args.seq_len,
+    if file_exists:=dataset_exists(activity_list,args.seq_len,args.concat_frame_num,'train'):
+        log_string(f'{file_exists} was founded.')
+        act_order=os.path.basename(file_exists).strip('.h5').split('_', 3)[3].split('_')
+        log_string(f'The order of act is:{act_order}')
+    else:
+        log_string(f'{file_exists} was not founded.')
+        act_order=activity_list
+        log_string(f'The order of act is:{activity_list}')
+
+
+    train_dataset = HARDataset(data_path, 'PAT', activity_list, concat_framNum=args.concat_frame_num,seq_len = args.seq_len,
                                file_list=train_files_point, pointLSTM=args.pointLSTM,dataset_type='train')
     trainDataLoader= DataLoader(dataset=train_dataset, batch_size=args.batch_size, shuffle=True, drop_last=False)
     test_dataset = HARDataset(data_path, 'PAT', activity_list, concat_framNum=args.concat_frame_num, seq_len=args.seq_len,
@@ -170,13 +220,15 @@ def main(args):
     # testDataLoader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=10)
 
     '''MODEL LOADING'''
-    num_class = args.num_category
+    num_class = len(activity_list)#args.num_category
     model = importlib.import_module(args.model)
     shutil.copy('./%s.py' % args.model, str(exp_dir))
     # shutil.copy('pointnet2_utils.py', str(exp_dir))
     shutil.copy(f'./{os.path.basename(__file__)}', str(exp_dir))
+    # classifier = model.PointNet_Vit( num_classes = num_class, seq_len = seqLen ,normal_channel=args.use_normals)
+    classifier = model.PointNet_Vit( k = num_class, seq_len = seqLen ,normal_channel=args.use_normals)
 
-    classifier = model.get_model( num_layers = 2, hidden_size = 2048, k = num_class, normal_channel=args.use_normals, model=args.rnn_type)
+    # classifier = model.get_model( num_layers = 2, hidden_size = 2048, k = num_class, normal_channel=args.use_normals, model=args.rnn_type)
     criterion = model.get_loss()
     classifier.apply(inplace_relu)
 
@@ -204,11 +256,16 @@ def main(args):
     else:
         optimizer = torch.optim.SGD(classifier.parameters(), lr=0.01, momentum=0.9)
 
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.7)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.7)
     global_epoch = 0
     global_step = 0
     best_instance_acc = 0.0
     best_class_acc = 0.0
+    best_instance_acc_class_acc_array=0.0  #当达到best instance acc时，记录class_acc_array
+    best_instance_cf=None
+    best_total_correct=0
+    # with SummaryWriter(log_dir=res_dir, comment='model') as writer:
+    #     writer.add_graph(classifier, (trainDataLoader.dataset[0], trainDataLoader.dataset[1]))
 
     '''TRANING'''
     logger.info('Start training...')
@@ -249,15 +306,20 @@ def main(args):
         log_string('Train Instance Accuracy: %f' % train_instance_acc)
 
         with torch.no_grad():
-            instance_acc, class_acc = test(classifier.eval(), testDataLoader, num_class=num_class)
+            instance_acc, class_acc_array, val_loss,cf,total_correct = test(classifier.eval(), testDataLoader, num_class=num_class)
+            class_acc = np.mean(class_acc_array[np.where(class_acc_array[:, 1] != 0), 2])
 
             if (instance_acc >= best_instance_acc):
                 best_instance_acc = instance_acc
                 best_epoch = epoch + 1
+                best_instance_acc_class_acc_array=class_acc_array
+                best_instance_cf=cf
+                best_total_correct=total_correct
 
             if (class_acc >= best_class_acc):
                 best_class_acc = class_acc
             log_string('Test Instance Accuracy: %f, Class Accuracy: %f' % (instance_acc, class_acc))
+            log_string('class_acc_when_best_instance_Acc: \n'+str(best_instance_acc_class_acc_array))
             log_string('Best Instance Accuracy: %f, Class Accuracy: %f' % (best_instance_acc, best_class_acc))
 
             if (instance_acc >= best_instance_acc):
@@ -273,7 +335,43 @@ def main(args):
                 }
                 torch.save(state, savepath)
             global_epoch += 1
+        if args.plot_result_in_tensorboard:
 
+            with SummaryWriter(log_dir=res_dir) as writer:  # 可以直接使用python的with语法，自动调用close方法
+                # writer.add_histogram('his/x', x, epoch)
+                # writer.add_histogram('his/y', y, epoch)
+                writer.add_scalars('result/loss', {'train': loss,
+                                                   'val': val_loss}, epoch)
+                writer.add_scalars('result/acc', {'train': torch.tensor(train_instance_acc),
+                                                 'val_instance': instance_acc,
+                                                 'val_class': torch.tensor(class_acc)}, epoch)
+                writer.add_scalars('result/class_acc', dict(zip(act_order,class_acc_array[:,2])), epoch)
+
+    log_string(f'best_instance_acc_cf is:\n {best_instance_cf}')
+    log_string(f'total_correct is:{best_total_correct}')
+    sns.set()
+    f, ax = plt.subplots()
+    sns.heatmap(best_instance_cf, annot=True, ax=ax,cmap='BuPu',fmt='d',xticklabels=activity_list,yticklabels=activity_list)  # 画热力图
+    ax.set_title('Confusion Matrix')
+    ax.set_xlabel('Prediction Value')
+    ax.set_ylabel('Truth Value')
+    plt.savefig('%s/confusion_matrix_count.png'% exp_dir)
+
+    #percetage
+    percetage=np.array([[best_instance_cf[i][j]/best_instance_cf[i].sum() for j in range(len(best_instance_cf[i]))] for i in range(len(best_instance_cf))])
+    f1, ax1 = plt.subplots()
+    sns.heatmap(percetage, annot=True, ax=ax1, cmap='BuPu', fmt='.2f', xticklabels=activity_list,
+                yticklabels=activity_list)  # 画热力图
+    ax1.set_title('Confusion Matrix')
+    ax1.set_xlabel('Prediction Value')
+    ax1.set_ylabel('Truth Value')
+    plt.savefig('%s/confusion_matrix_percetage.png' % exp_dir)
+
+    plt.show()
+
+    for epoch in range(start_epoch, args.epoch):
+        with SummaryWriter(log_dir=res_dir) as writer:
+            writer.add_scalar('result/acc', torch.tensor(best_class_acc),epoch)
     logger.info('End of training...')
 
 
