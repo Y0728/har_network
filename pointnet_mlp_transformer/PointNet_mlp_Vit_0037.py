@@ -292,7 +292,7 @@ class PointNet_Vit(nn.Module):
     #              num_heads=12, mlp_ratio=4., qkv_bias=True, representation_size=None, distilled=False,
     #              drop_rate=0., attn_drop_rate=0., drop_path_rate=0., embed_layer=PatchEmbed, norm_layer=None,
     #              act_layer=None, weight_init=''):
-    def __init__(self, num_layers, hidden_size,seq_len, k = 5, normal_channel = True, model = 'rnn',
+    def __init__(self, num_layers, hidden_size,seq_len, k = 5, channel = 5, normal_channel = True, model = 'rnn',
                  num_classes=8,embed_dim_t = 64, embed_dim=128, depth_t = 2, depth=2,
                  num_heads=8, mlp_ratio=4., qkv_bias=True, representation_size=None, distilled=False,
                  drop_rate=0., attn_drop_rate=0., drop_path_rate=0., embed_layer=PatchEmbed, norm_layer=None,
@@ -318,10 +318,11 @@ class PointNet_Vit(nn.Module):
             weight_init: (str): weight init scheme
         """
         super().__init__()
-        if normal_channel:
-            channel = 6
-        else:
-            channel = 5  # 3
+        # if normal_channel:
+        #     channel = 6
+        # else:
+        #     channel = 5  # 3
+        self.channel = channel
         self.num_classes = num_classes
         self.num_features = self.embed_dim = embed_dim  # num_features for consistency with other models
         self.num_tokens = 2 if distilled else 1
