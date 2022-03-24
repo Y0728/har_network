@@ -1,6 +1,7 @@
 #!/usr/bin/env Python
 # coding=utf-8
 import logging
+from pathlib import Path
 
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
@@ -99,7 +100,13 @@ def save_dataset_to_h5(seq_len, concat_frame_num,act_list, x_point, x_target, y,
     if dataset_type == None:
         dataset_type = 'None'
     act_string = '_'.join(act_list)
-    f = h5py.File(f'../../har_dataset/{dataset_type}_{seq_len}_{concat_frame_num}_{act_string}.h5', 'w')
+    if DEBUG:
+        dataset_dir = '../har_dataset/'
+    else:
+        dataset_dir = '../../har_dataset/'
+    Path(dataset_dir).mkdir(exist_ok=True)
+    f = h5py.File(f'{dataset_dir}{dataset_type}_{seq_len}_{concat_frame_num}_{act_string}.h5', 'w')
+    # f = h5py.File(f'../../har_dataset/{dataset_type}_{seq_len}_{concat_frame_num}_{act_string}.h5', 'w')
     f.create_dataset('x_point', data=x_point)
     f.create_dataset('x_target', data=x_target)
     f.create_dataset('y',data=y)
@@ -131,7 +138,7 @@ def dataset_exists(activity_list, seq_len, concat_frameNum, dataset_type = None)
 
 class HARDataset(Dataset):
 
-    def __init__(self, path, type, act_list, concat_framNum = 1, seq_len=10, file_list=None, pointLSTM = False, dataset_type=None):
+    def __init__(self, path, type, act_list, concat_framNum = 1, seq_len=10, file_list=None, pointLSTM = False, dataset_type=None, pc_channel = 5):
         """可以在初始化函数当中对数据进行一些操作，比如读取、归一化等"""
         # self.data = np.loadtxt(path)  # 读取 txt 数据
         # self.x = self.data[:, 1:]  # 输入变量
@@ -144,6 +151,7 @@ class HARDataset(Dataset):
         self.concat_frameNum = concat_framNum
         self.dataset_type=dataset_type
         self.pointLSTM = pointLSTM
+        self.pc_channel = pc_channel
         if file_list != None:
             self.file_list = file_list
         # self.type = type # 'target' or 'point'
@@ -649,6 +657,8 @@ class HARDataset(Dataset):
         fileName = dataset_exists(act, self.seq_len, self.concat_frameNum, self.dataset_type)
         if fileName and h5py.File(fileName, 'r')['valid']:
             f = h5py.File(fileName, 'r')
+            logging.info(f'{fileName} is loaded.')
+            print(f'{fileName} is loaded.')
             return f['x_point'][()],f['x_target'][()], f['y'][()]-1
             # return torch.tensor(f['x_point'][()].tolist()),torch.tensor(f['x_target'][()].tolist()), f['y'][()]-1
             # torch.tensor(x_data.tolist()), torch.tensor((x_target.tolist())), y
@@ -656,7 +666,6 @@ class HARDataset(Dataset):
         x_data = np.array([])
         x_target = np.array([])
         y = []
-
         for file in file_list:
             print(file)
             # delimiter=None if '100' in file and 'run' in file else ','
@@ -664,10 +673,19 @@ class HARDataset(Dataset):
             t_frame_id = target_data[1:, 0]
             target_attri = target_data[1:, 2:11]
             point_data = genfromtxt(file, delimiter=',')  # list无法通过 slice 直接获取某一列，所以别用tolist()转成list
+            if len(point_data[0,:]) < 2 + self.pc_channel:
+                logging.info(f'{file} does not contain 7 attributes.')
+                print(f'{file} does not contain 7 attributes.')
+                continue
+            if self.pc_channel == 7:  # columns = frame_id, target_id, pos_x, pos_y, pos_z, doppler, snr, range, azimuth, elevation
+                point_data = point_data[:,[0,1,2,3,4,7,8,9,5,6]]
             frame_id = point_data[1:, 0]
-            point_attri = point_data[1:, 2:7]
+            # point_attri = point_data[1:, 2:7]
+            point_attri = point_data[1:, 2:2+self.pc_channel]
+
             end_frame_id = frame_id[-1]
             i = 0
+            frame_len = len(frame_id)
             while i < len(point_data):
                 curSeq_frame_id = frame_id[i]
 
@@ -682,13 +700,14 @@ class HARDataset(Dataset):
                     curSam_frame_id = frame_id[j]
                     thre_1 = curSam_frame_id + self.concat_frameNum
                     c_frame = 0
-                    frame_len = len(frame_id)
+
                     while j + c_frame < frame_len and frame_id[j + c_frame] < thre_1:
                         c_frame += 1
 
                     tmp_sample = point_attri[j:j + c_frame]
-                    if len(tmp_sample) == 0:
-                        continue
+                    ## 以下两行代码有问题，如果是只用既有point又有target的数据，那不会出现(len(tmp_sample)=0)的情况，如果是会用到有target而没有point的数据，那下面的continue会导致死循环，因为i没加1，所以下一个sample还是会continue
+                    # if len(tmp_sample) == 0:
+                    #     continue
                     # pad the point number to 16*concat_frameNum
                     if len(tmp_sample) > (16 * self.concat_frameNum):
                         sample = tmp_sample[:16 * self.concat_frameNum]
@@ -704,13 +723,20 @@ class HARDataset(Dataset):
 
                     if frame_id[j] == end_frame_id:
                         break
+                    last_sample_frame = frame_id[j]
                     while frame_id[j] == curSam_frame_id:
                         j += 1
-
-                if len(samples_array) != self.seq_len:
-                    break
-                # concatenate the sample to dataset
+                    if j < frame_len and frame_id[j] > last_sample_frame + 10:   #加，如果一个seq中两个相邻的sample之间的帧号大于10，认为中断，该seq作废？
+                        break
                 idx = np.where(t_frame_id[:] == frame_id[i])[0][0]
+                if frame_id[j] == end_frame_id:
+                    break
+                if len(samples_array) != self.seq_len:
+                    # 防止因为len(samples_array) != self.seq_len而break导致的死循环
+                    while frame_id[i] < frame_id[j]:
+                        i += 1
+                    continue  # 220318 修改，break -> continue 如果samples_array的长度不到seq_len的话，继续下一个sample
+                # concatenate the sample to dataset
                 if len(x_data) == 0:  # 因为目前data_collecting 逻辑是有一个target才会记录数据，所以point的帧数小于等于target
                     # 所以记录的时候先以point为准，有point才做成sample
                     # x_data.shape=(sampleNums, seq_len, 16*concat_framNum, attriNum)
@@ -732,15 +758,17 @@ class HARDataset(Dataset):
                     i += 1
             print(f'{file} processed')
         if len(x_data) == 0:
-            print('Warning: Dataset is not found!')
-            sys.exit(1)
+            logging.warning(f'{act} generates 0 data sample.')
+            print(f'{act} generates 0 data sample.')
+            # print('Warning: Dataset is not found!')
+            # sys.exit(1)
         if self.seq_len == 1:
             x_data = np.squeeze(x_data)
             x_target=np.squeeze(x_target)
         # save_dataset_to_h5(self.seq_len, self.concat_frameNum, self.activity_list,x_data, x_target, y, self.dataset_type)
         # return torch.tensor(x_data.tolist()), torch.tensor((x_target.tolist())), y
         # 感觉不用保存，因为已经拼接了，还存啥呀
-        # save_dataset_to_h5(self.seq_len, self.concat_frameNum, [act],x_data, x_target, y, self.dataset_type)
+        save_dataset_to_h5(self.seq_len, self.concat_frameNum, [act],x_data, x_target, y, self.dataset_type)
         # return torch.tensor(x_data.tolist()), torch.tensor((x_target.tolist())), [i-1 for i in y]
         return x_data, x_target, y
 
@@ -765,7 +793,10 @@ class HARDataset(Dataset):
         act_dic = dict(zip(self.activity_list, range(len(self.activity_list))))
         logging.info(f'the act_dict is: {act_dic}.')
         for act in self.activity_list:
-            train_files_point, test_files_point = train_test_split([act], 'point', '../../har_data', 0.75)
+            if DEBUG:
+                train_files_point, test_files_point = train_test_split([act], 'point', '../har_data', 0.75)
+            else:
+                train_files_point, test_files_point = train_test_split([act], 'point', '../../har_data', 0.75)
 
             if self.dataset_type=='train':
                 file_list_for_one_act = train_files_point
@@ -773,6 +804,7 @@ class HARDataset(Dataset):
                 file_list_for_one_act = test_files_point
 
             x_p, x_t, y_label = self.createPATDatasetWithFileList_save_h5_v2(act, file_list_for_one_act)
+
             # file = f'../../har_dataset/{self.dataset_type}_{self.seq_len}_{self.concat_num}_{act}.h5'
             if len(point_data)==0:
                 point_data=x_p
@@ -843,7 +875,7 @@ DEBUG=False
 if __name__ == '__main__':
     DEBUG=True
     dataDir = "../har_data/"
-    activity_list = ['bend','jump']
+    activity_list = ['stand']
     train_files, test_files = train_test_split(activity_list, 'point', dataDir, 0.75)
     # train_dataset = HARDataset(dataDir, 'point', activity_list, concat_framNum=3,seq_len=1, file_list=train_files, pointLSTM=False)
     print('!')
@@ -857,4 +889,4 @@ if __name__ == '__main__':
 
     test_dataset = HARDataset(dataDir, 'PAT', activity_list, concat_framNum=3,
                               seq_len=20,
-                              file_list=test_files, pointLSTM=True, dataset_type='test')
+                              file_list=test_files, pointLSTM=True, dataset_type='test',pc_channel=7)
