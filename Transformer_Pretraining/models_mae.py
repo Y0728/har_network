@@ -30,9 +30,10 @@ class MaskedAutoencoderViT(nn.Module):
     #              decoder_embed_dim=512, decoder_depth=8, decoder_num_heads=16,
     #              mlp_ratio=4., norm_layer=nn.LayerNorm, norm_pix_loss=False):
     def __init__(self, img_size=16*3, patch_size=48, in_chans=5,
-                 embed_dim=1024, depth=24, num_heads=16,
-                 decoder_embed_dim=512, decoder_depth=8, decoder_num_heads=16,
-                 mlp_ratio=4., norm_layer=nn.LayerNorm, norm_pix_loss=False):
+                 embed_dim=128, depth=2, num_heads=8,qkv_bias=True,representation_size=None, distilled=False,
+                 drop_rate=0., attn_drop_rate=0., drop_path_rate=0.,act_layer=None, weight_init='',
+                 decoder_embed_dim=64, decoder_depth=2, decoder_num_heads=4,
+                 mlp_ratio=4., norm_layer=None, norm_pix_loss=False):
         super().__init__()
 
         # --------------------------------------------------------------------------
@@ -50,11 +51,19 @@ class MaskedAutoencoderViT(nn.Module):
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
         self.pos_embed = nn.Parameter(torch.zeros(1, num_patches + 1, embed_dim),
                                       requires_grad=False)  # fixed sin-cos embedding
-
-        self.blocks = nn.ModuleList([
-            # Block(embed_dim, num_heads, mlp_ratio, qkv_bias=True, qk_scale=None, norm_layer=norm_layer)
-            Block(embed_dim, num_heads, mlp_ratio, qkv_bias=True, norm_layer=norm_layer)
+        norm_layer = norm_layer or partial(nn.LayerNorm, eps=1e-6)
+        act_layer = act_layer or nn.GELU
+        dpr = [x.item() for x in torch.linspace(0, drop_path_rate, depth)]  # stochastic depth decay rule
+        self.blocks = nn.Sequential(*[
+            Block(
+                dim=embed_dim, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, drop=drop_rate,
+                attn_drop=attn_drop_rate, drop_path=dpr[i], norm_layer=norm_layer, act_layer=act_layer)
             for i in range(depth)])
+        # ori
+        # self.blocks = nn.ModuleList([
+        #     # Block(embed_dim, num_heads, mlp_ratio, qkv_bias=True, qk_scale=None, norm_layer=norm_layer)
+        #     Block(embed_dim, num_heads, mlp_ratio, qkv_bias=True, norm_layer=norm_layer)
+        #     for i in range(depth)])
         self.norm = norm_layer(embed_dim)
         # --------------------------------------------------------------------------
 
@@ -190,27 +199,27 @@ class MaskedAutoencoderViT(nn.Module):
 
         return x_masked, mask, ids_restore
 
-    def forward_encoder_onlypoint(self, point_data, mask_ratio):
-        # embed patches
-        x, trans_fea_array = self.patch_embed(point_data)
-
-        # add pos embed w/o cls token
-        x = x + self.pos_embed[:, 1:, :]
-
-        # masking: length -> length * mask_ratio
-        x, mask, ids_restore = self.random_masking(x, mask_ratio)
-
-        # append cls token
-        cls_token = self.cls_token + self.pos_embed[:, :1, :]
-        cls_tokens = cls_token.expand(x.shape[0], -1, -1)
-        x = torch.cat((cls_tokens, x), dim=1)
-
-        # apply Transformer blocks
-        for blk in self.blocks:
-            x = blk(x)
-        x = self.norm(x)
-
-        return x, mask, ids_restore,trans_fea_array
+    # def forward_encoder_onlypoint(self, point_data, mask_ratio):
+    #     # embed patches
+    #     x, trans_fea_array = self.patch_embed(point_data)
+    #
+    #     # add pos embed w/o cls token
+    #     x = x + self.pos_embed[:, 1:, :]
+    #
+    #     # masking: length -> length * mask_ratio
+    #     x, mask, ids_restore = self.random_masking(x, mask_ratio)
+    #
+    #     # append cls token
+    #     cls_token = self.cls_token + self.pos_embed[:, :1, :]
+    #     cls_tokens = cls_token.expand(x.shape[0], -1, -1)
+    #     x = torch.cat((cls_tokens, x), dim=1)
+    #
+    #     # apply Transformer blocks
+    #     for blk in self.blocks:
+    #         x = blk(x)
+    #     x = self.norm(x)
+    #
+    #     return x, mask, ids_restore,trans_fea_array
 
     def forward_encoder(self, point_data, target_data, mask_ratio):
         # embed patches
@@ -231,8 +240,10 @@ class MaskedAutoencoderViT(nn.Module):
         x = torch.cat((cls_tokens, x), dim=1)
 
         # apply Transformer blocks
-        for blk in self.blocks:
-            x = blk(x)
+        x = self.blocks(x)
+        # ori
+        # for blk in self.blocks:
+        #     x = blk(x)
         x = self.norm(x)
 
         return x, mask, ids_restore,trans_fea_array
@@ -263,12 +274,20 @@ class MaskedAutoencoderViT(nn.Module):
 
         return x   #x.shape=[batch_size, seq_len, pointNum*channel(48*5)]
 
-    def forward_loss(self, imgs, pred, mask):
+    def forward_loss(self, imgs, pred, mask,trans_feat_array):
         """
         imgs: [N, 3, H, W]
         pred: [N, L, p*p*3]
         mask: [N, L], 0 is keep, 1 is remove,
         """
+        mat_diff_loss_scale = 0.001
+        mat_diff_loss = 0
+        for i, trans_feat in enumerate(trans_feat_array):
+            # print(trans_feat_array)
+            # print(f"the size of trans_feat_array {trans_feat_array.shape}")  #10, 512, 64, 64]
+
+            mat_diff_loss += feature_transform_reguliarzer(trans_feat)  # trans_feat.shape = (batch_size,64,64)
+        point_loss = mat_diff_loss * mat_diff_loss_scale
         target = self.patchify(imgs)   # batch_size, 每个patch的pixel数, seq_len*3
         if self.norm_pix_loss:
             mean = target.mean(dim=-1, keepdim=True)
@@ -277,16 +296,25 @@ class MaskedAutoencoderViT(nn.Module):
 
         loss = (pred - target) ** 2
         loss = loss.mean(dim=-1)  # [N, L], mean loss per patch
-
+        # 加
+        loss += point_loss
         loss = (loss * mask).sum() / mask.sum()  # mean loss on removed patches
         return loss
 
     def forward(self, imgs, target,mask_ratio=0.75):
         latent, mask, ids_restore,trans_fea_array = self.forward_encoder(imgs, target,mask_ratio)
         pred = self.forward_decoder(latent, ids_restore)  # [N, L, p*p*3]
-        loss = self.forward_loss(imgs, pred, mask)
+        loss = self.forward_loss(imgs, pred, mask,trans_fea_array)
         return loss, pred, mask, trans_fea_array
 
+
+def feature_transform_reguliarzer(trans):
+    d = trans.size()[1]
+    I = torch.eye(d)[None, :, :]
+    if trans.is_cuda:
+        I = I.cuda()
+    loss = torch.mean(torch.norm(torch.bmm(trans, trans.transpose(2, 1)) - I, dim=(1, 2)))
+    return loss
 
 
 

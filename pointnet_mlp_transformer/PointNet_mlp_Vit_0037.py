@@ -355,7 +355,7 @@ class PointNet_Vit(nn.Module):
         #         dim=embed_dim_t, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, drop=drop_rate,
         #         attn_drop=attn_drop_rate, drop_path=dpr_t[i], norm_layer=norm_layer, act_layer=act_layer)
         #     for i in range(depth_t)])
-        self.norm_t = norm_layer(embed_dim_t)
+        # self.norm_t = norm_layer(embed_dim_t)
 
         # Representation layer
         if representation_size and not distilled:
