@@ -38,7 +38,7 @@ from point_transformer.layers import PatchEmbed, Mlp, DropPath, trunc_normal_, l
 from point_transformer.registry import register_model
 
 from pointnet_utils_PAT_pnmlp_Trans_tf_vit import PointNetEncoder, feature_transform_reguliarzer
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = 'cpu'#torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 _logger = logging.getLogger(__name__)
@@ -373,7 +373,7 @@ class PointNet_Vit(nn.Module):
         if distilled:
             self.head_dist = nn.Linear(self.embed_dim, self.num_classes) if num_classes > 0 else nn.Identity()
 
-        # self.init_weights(weight_init)
+        self.init_weights(weight_init)
         # self.embed_target = nn.Linear(9, 256)
         self.embed_target = nn.Sequential(
                 nn.Linear(9, 16),

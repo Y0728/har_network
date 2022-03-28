@@ -64,12 +64,13 @@ def parse_args():
     parser.add_argument('--process_data', action='store_true', default=False, help='save data offline')
     parser.add_argument('--use_uniform_sample', action='store_true', default=False, help='use uniform sampling')
     parser.add_argument('--seq_len', default=seqLen, help='default is 10')
-    parser.add_argument('--activity_list', default=['stand','jump','sit','fall','run','walk','bend'], help='activity types') #['fall', 'run']','stand','jump','sit','fall','run','walk','bend'#'walk','fall','stand','sit'
+    parser.add_argument('--activity_list', default=['run'], help='activity types') #['fall', 'run']','stand','jump','sit','fall','run','walk','bend'#'walk','fall','stand','sit'
     parser.add_argument('--concat_frame_num', type=int, default=concat_framNum,
                         help='The number of frames that are concatenated together as one sample')
     parser.add_argument('--pointLSTM', default=True, help='Create dataset for lstm if it is true, default is False')
     parser.add_argument('--rnn_type', default='rnn', help='The type of recurrent network')
     parser.add_argument('--plot_result_in_tensorboard', default=True, help='Plot the acc and loss in tensorboard')
+    parser.add_argument('--pc_channel',default = 5,help='The number of attributes of every point to be used.')
     return parser.parse_args()
 
 
@@ -206,10 +207,10 @@ def main(args):
 
 
     train_dataset = HARDataset(data_path, 'PAT', activity_list, concat_framNum=args.concat_frame_num,seq_len = args.seq_len,
-                               file_list=train_files_point, pointLSTM=args.pointLSTM,dataset_type='train',pc_channel=7)
+                               file_list=train_files_point, pointLSTM=args.pointLSTM,dataset_type='train',pc_channel=args.pc_channel)
     trainDataLoader= DataLoader(dataset=train_dataset, batch_size=args.batch_size, shuffle=True, drop_last=False)
     test_dataset = HARDataset(data_path, 'PAT', activity_list, concat_framNum=args.concat_frame_num, seq_len=args.seq_len,
-                              file_list=test_files_point, pointLSTM=args.pointLSTM,dataset_type='test',pc_channel=7)
+                              file_list=test_files_point, pointLSTM=args.pointLSTM,dataset_type='test',pc_channel=args.pc_channel)
     testDataLoader = DataLoader(dataset=test_dataset, batch_size=args.batch_size, shuffle=True, drop_last=False)
 
 
@@ -225,7 +226,7 @@ def main(args):
     # shutil.copy('pointnet2_utils.py', str(exp_dir))
     shutil.copy(f'./{os.path.basename(__file__)}', str(exp_dir))
     ## 0037
-    classifier = model.PointNet_Vit( num_layers = 2, hidden_size = 2048, k = num_class,channel = 7, normal_channel=args.use_normals, model=args.rnn_type,seq_len = seqLen)
+    classifier = model.PointNet_Vit( num_layers = 2, hidden_size = 2048, k = num_class,channel = args.pc_channel, normal_channel=args.use_normals, model=args.rnn_type,seq_len = seqLen)
     # classifier = model.PointNet_Vit(  num_classes= num_class, normal_channel=args.use_normals,seq_len = seqLen)
 
     # classifier = model.get_model( num_layers = 2, hidden_size = 2048, k = num_class, normal_channel=args.use_normals, model=args.rnn_type)

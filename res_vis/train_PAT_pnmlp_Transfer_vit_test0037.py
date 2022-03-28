@@ -4,16 +4,27 @@ Date: Nov 2019
 """
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "5"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 import sys
 import torch
 import numpy as np
 
+
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = BASE_DIR
+PARENT_DIR = os.path.dirname(ROOT_DIR)
+sys.path.append(ROOT_DIR)
+sys.path.append(PARENT_DIR)
+print(PARENT_DIR)
+print(ROOT_DIR)
 print(sys.path)
+
 import datetime
 import logging
 from pointnet import provider
+# import provider
 import importlib
 import shutil
 import argparse
@@ -43,6 +54,8 @@ torch.cuda.manual_seed(0)
 np.random.seed(0)
 random.seed(0)
 torch.backends.cudnn.deterministic = True
+# torch.use_deterministic_algorithms(True)
+torch.backends.cudnn.benchmark = False
 
 
 def parse_args():

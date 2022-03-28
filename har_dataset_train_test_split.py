@@ -85,7 +85,7 @@ def train_test_split(activity_list, datatype, har_data_dir, train_ratio):
 
     return train_file_list, test_file_list
 
-def save_dataset_to_h5(seq_len, concat_frame_num,act_list, x_point, x_target, y, dataset_type = None):
+def save_dataset_to_h5(seq_len, concat_frame_num,act_list, x_point, x_target, y, dataset_type = None, pc_chan=5):
     '''
     Save the dataset to h5 file, and name it by seq_len, concate_frame_num, act_list
     :param seq_len:
@@ -101,9 +101,9 @@ def save_dataset_to_h5(seq_len, concat_frame_num,act_list, x_point, x_target, y,
         dataset_type = 'None'
     act_string = '_'.join(act_list)
     if DEBUG:
-        dataset_dir = '../har_dataset/'
+        dataset_dir = f'../har_dataset_{pc_chan}attri/'
     else:
-        dataset_dir = '../../har_dataset/'
+        dataset_dir = f'../../har_dataset_{pc_chan}attri/'
     Path(dataset_dir).mkdir(exist_ok=True)
     f = h5py.File(f'{dataset_dir}{dataset_type}_{seq_len}_{concat_frame_num}_{act_string}.h5', 'w')
     # f = h5py.File(f'../../har_dataset/{dataset_type}_{seq_len}_{concat_frame_num}_{act_string}.h5', 'w')
@@ -113,7 +113,7 @@ def save_dataset_to_h5(seq_len, concat_frame_num,act_list, x_point, x_target, y,
     f.create_dataset('valid',data=1)
     f.close()
 
-def dataset_exists(activity_list, seq_len, concat_frameNum, dataset_type = None):
+def dataset_exists(activity_list, seq_len, concat_frameNum, dataset_type = None, pc_chan = 5):
     '''
     Check if the dataset has already existed.
     :param activity_list:
@@ -128,9 +128,9 @@ def dataset_exists(activity_list, seq_len, concat_frameNum, dataset_type = None)
         dataset_type = 'None'
     partition = "train"
     if DEBUG:
-        file_list = glob.glob(f'../har_dataset/{dataset_type}_{seq_len}_{concat_frameNum}_*.h5')
+        file_list = glob.glob(f'../har_dataset_{pc_chan}attri/{dataset_type}_{seq_len}_{concat_frameNum}_*.h5')
     else:
-        file_list = glob.glob(f'../../har_dataset/{dataset_type}_{seq_len}_{concat_frameNum}_*.h5')
+        file_list = glob.glob(f'../../har_dataset_{pc_chan}attri/{dataset_type}_{seq_len}_{concat_frameNum}_*.h5')
     for file in file_list:
         if set(os.path.basename(file).strip('.h5').split('_',3)[3].split('_')) == set(activity_list):
             return file   # contains root dir
@@ -325,7 +325,7 @@ class HARDataset(Dataset):
         :return: point dataset
         '''
         # 待添加筛选出有效点，去掉 target_id 大于254的点
-        fileName = dataset_exists(self.activity_list, self.seq_len, self.concat_frameNum, self.dataset_type,do_seq=self.pointLSTM)
+        fileName = dataset_exists(self.activity_list, self.seq_len, self.concat_frameNum, self.dataset_type,do_seq=self.pointLSTM,pc_chan=self.pc_channel)  # 好像没有do_seq这个参数哇？
         if fileName and h5py.File(fileName, 'r')['valid']:
             f = h5py.File(fileName, 'r')
             return torch.tensor(f['x_point'][()].tolist()), torch.tensor(f['x_target'][()].tolist()), f['y'][()]
@@ -550,7 +550,7 @@ class HARDataset(Dataset):
         :param file_list: lists the point file to create dataset
         :return: a dataset contains point samples, target samples and labels.
         '''
-        fileName = dataset_exists(self.activity_list, self.seq_len, self.concat_frameNum, self.dataset_type)
+        fileName = dataset_exists(self.activity_list, self.seq_len, self.concat_frameNum, self.dataset_type,self.pc_channel)
         if fileName and h5py.File(fileName, 'r')['valid']:
             f = h5py.File(fileName, 'r')
             return torch.tensor(f['x_point'][()].tolist()),torch.tensor(f['x_target'][()].tolist()), f['y'][()]-1
@@ -654,7 +654,7 @@ class HARDataset(Dataset):
         :param file_list: lists the point file to create dataset
         :return: a dataset contains point samples, target samples and labels.
         '''
-        fileName = dataset_exists(act, self.seq_len, self.concat_frameNum, self.dataset_type)
+        fileName = dataset_exists(act, self.seq_len, self.concat_frameNum, self.dataset_type,self.pc_channel)
         if fileName and h5py.File(fileName, 'r')['valid']:
             f = h5py.File(fileName, 'r')
             logging.info(f'{fileName} is loaded.')
@@ -840,7 +840,7 @@ class HARDataset(Dataset):
 
 
 
-def dataset_split(source_file):
+def dataset_split(source_file,pc_chan = 5):
     '''
     把原来各种状态和在一起的状态集拆分成按状态分别存储，读取的时候根据activity_list合并就行
     :param source_file:
@@ -860,7 +860,7 @@ def dataset_split(source_file):
             for act in source_act_list:
                 label=act_dic[act]
                 act_index=np.where(f['y'][()] == label+1)
-                f_act = h5py.File(f'../har_dataset/{dataset_type}_{seq_len}_{concat_frame_num}_{act}.h5', 'w')
+                f_act = h5py.File(f'../har_dataset_{pc_chan}attri/{dataset_type}_{seq_len}_{concat_frame_num}_{act}.h5', 'w')
                 f_act.create_dataset('x_point', data=f['x_point'][()][act_index])
                 f_act.create_dataset('x_target', data=f['x_target'][()][act_index])
                 f_act.create_dataset('y', data=[1 for i in range(len(act_index))])
