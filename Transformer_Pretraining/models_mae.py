@@ -19,6 +19,7 @@ from util.pos_embed import get_2d_sincos_pos_embed
 
 import numpy as np
 from pointnet_utils_transformer_pretraining import PointNetEncoder, PatchEmbed,feature_transform_reguliarzer
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class MaskedAutoencoderViT(nn.Module):
     """ Masked Autoencoder with VisionTransformer backbone
@@ -37,15 +38,22 @@ class MaskedAutoencoderViT(nn.Module):
         # --------------------------------------------------------------------------
         # MAE encoder specifics
         # self.patch_embed = PatchEmbed(img_size, patch_size, in_chans, embed_dim)
-        self.patch_embed = PatchEmbed(img_size, patch_size, 20, in_chans, embed_dim)
+        self.patch_embed = PatchEmbed(img_size, patch_size, 20, in_chans, embed_dim = embed_dim//2)  # 如果既有point又有target 则用embed_dim/2s
         num_patches = 20    # self.patch_embed.num_patches
-
+        self.embed_target = nn.Sequential(
+            nn.Linear(9, 16),
+            nn.ReLU(),
+            nn.Linear(16, 64),
+            # nn.ReLU(),
+            # nn.Linear(128, 256),
+        )
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
         self.pos_embed = nn.Parameter(torch.zeros(1, num_patches + 1, embed_dim),
                                       requires_grad=False)  # fixed sin-cos embedding
 
         self.blocks = nn.ModuleList([
-            Block(embed_dim, num_heads, mlp_ratio, qkv_bias=True, qk_scale=None, norm_layer=norm_layer)
+            # Block(embed_dim, num_heads, mlp_ratio, qkv_bias=True, qk_scale=None, norm_layer=norm_layer)
+            Block(embed_dim, num_heads, mlp_ratio, qkv_bias=True, norm_layer=norm_layer)
             for i in range(depth)])
         self.norm = norm_layer(embed_dim)
         # --------------------------------------------------------------------------
@@ -60,7 +68,9 @@ class MaskedAutoencoderViT(nn.Module):
                                               requires_grad=False)  # fixed sin-cos embedding
 
         self.decoder_blocks = nn.ModuleList([
-            Block(decoder_embed_dim, decoder_num_heads, mlp_ratio, qkv_bias=True, qk_scale=None, norm_layer=norm_layer)
+            # Block(decoder_embed_dim, decoder_num_heads, mlp_ratio, qkv_bias=True, qkv_scale = None, norm_layer=norm_layer)
+            Block(decoder_embed_dim, decoder_num_heads, mlp_ratio, qkv_bias=True, norm_layer=norm_layer)
+
             for i in range(decoder_depth)])
 
         self.decoder_norm = norm_layer(decoder_embed_dim)
@@ -180,9 +190,34 @@ class MaskedAutoencoderViT(nn.Module):
 
         return x_masked, mask, ids_restore
 
-    def forward_encoder(self, point_data, mask_ratio):
+    def forward_encoder_onlypoint(self, point_data, mask_ratio):
         # embed patches
         x, trans_fea_array = self.patch_embed(point_data)
+
+        # add pos embed w/o cls token
+        x = x + self.pos_embed[:, 1:, :]
+
+        # masking: length -> length * mask_ratio
+        x, mask, ids_restore = self.random_masking(x, mask_ratio)
+
+        # append cls token
+        cls_token = self.cls_token + self.pos_embed[:, :1, :]
+        cls_tokens = cls_token.expand(x.shape[0], -1, -1)
+        x = torch.cat((cls_tokens, x), dim=1)
+
+        # apply Transformer blocks
+        for blk in self.blocks:
+            x = blk(x)
+        x = self.norm(x)
+
+        return x, mask, ids_restore,trans_fea_array
+
+    def forward_encoder(self, point_data, target_data, mask_ratio):
+        # embed patches
+        sample_fea, trans_fea_array = self.patch_embed(point_data)
+        embeded_target_data = self.embed_target(target_data)
+
+        x = torch.cat((embeded_target_data, sample_fea), 2).to(device)  # input = torch.cat((target_data, sample_fea), 2).to(device)
 
         # add pos embed w/o cls token
         x = x + self.pos_embed[:, 1:, :]
@@ -247,7 +282,7 @@ class MaskedAutoencoderViT(nn.Module):
         return loss
 
     def forward(self, imgs, target,mask_ratio=0.75):
-        latent, mask, ids_restore,trans_fea_array = self.forward_encoder(imgs, mask_ratio)
+        latent, mask, ids_restore,trans_fea_array = self.forward_encoder(imgs, target,mask_ratio)
         pred = self.forward_decoder(latent, ids_restore)  # [N, L, p*p*3]
         loss = self.forward_loss(imgs, pred, mask)
         return loss, pred, mask, trans_fea_array

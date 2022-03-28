@@ -2,7 +2,7 @@
 Author: Benny
 Date: Nov 2019
 """
-
+# 某一中间版本，弃用。
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
