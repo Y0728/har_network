@@ -38,7 +38,7 @@ from point_transformer.layers import PatchEmbed, Mlp, DropPath, trunc_normal_, l
 from point_transformer.registry import register_model
 
 from pointnet_utils_PAT_pnmlp_Trans_tf_vit import PointNetEncoder, feature_transform_reguliarzer
-device = 'cpu'#torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 _logger = logging.getLogger(__name__)

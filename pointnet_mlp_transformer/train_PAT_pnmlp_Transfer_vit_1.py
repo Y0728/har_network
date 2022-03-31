@@ -71,6 +71,7 @@ def parse_args():
     parser.add_argument('--rnn_type', default='rnn', help='The type of recurrent network')
     parser.add_argument('--plot_result_in_tensorboard', default=True, help='Plot the acc and loss in tensorboard')
     parser.add_argument('--pc_channel',default = 5,help='The number of attributes of every point to be used.')
+    parser.add_argument('--pretrain',default=False,help='If pretrain is True, the pretrained model will be loaded.')
     return parser.parse_args()
 
 
@@ -238,10 +239,20 @@ def main(args):
         criterion = criterion.cuda()
 
     try:
-        checkpoint = torch.load(str(exp_dir) + '/checkpoints/best_model.pth')
-        start_epoch = checkpoint['epoch']
-        classifier.load_state_dict(checkpoint['model_state_dict'])
-        log_string('Use pretrain model')
+        if args.pretrain:
+            checkpoint = torch.load('/home/zlc/yj/HAR/har_network/Transformer_Pretraining/log/classification/2022-03-28_11-15/checkpoints/checkpoint-0.pth')
+            # checkpoint = torch.load(str(exp_dir) + '/checkpoints/best_model.pth')
+            start_epoch = checkpoint['epoch']
+            classifier.load_state_dict(checkpoint['model'])
+            # classifier.load_state_dict(checkpoint['model_state_dict'])
+            log_string('Use pretrain model')
+        else:
+
+            # checkpoint = torch.load(str(exp_dir) + '/checkpoints/best_model.pth')
+            checkpoint = torch.load('/home/zlc/yj/HAR/har_network/pointnet_mlp_transformer/log/classification/2022-02-22_00-37/checkpoints/best_model.pth')
+            start_epoch = checkpoint['epoch']
+            classifier.load_state_dict(checkpoint['model_state_dict'])
+            log_string('Use existing model')
     except:
         log_string('No existing model, starting training from scratch...')
         start_epoch = 0

@@ -125,7 +125,7 @@ if __name__ == '__main__':
                                    use_cuda=args.use_cuda,
                                    reshape_transform=reshape_transform)
     data_path = '../../har_data'
-    activity_list = ['walk']
+    activity_list = ['sit']
     train_files_point, test_files_point = train_test_split(activity_list, 'point', data_path, 0.75)
     test_dataset = HARDataset(data_path, 'PAT', activity_list, concat_framNum=3,
                               seq_len=20,
@@ -153,7 +153,10 @@ if __name__ == '__main__':
                         aug_smooth=args.aug_smooth)    # grayscale_cam.shape = (1, 1, 20)
 
     grayscale_cam = grayscale_cam[0, :]
-    cv2.imwrite(f'{args.method}_cam_walk.jpg', grayscale_cam)
+    cam_image = show_cam_on_image(grayscale_cam)
+
+    cv2.imwrite(f'{args.method}_getweights_test.jpg', cam_image)
+    # cv2.imwrite(f'{args.method}_getweights_max_sit.jpg', grayscale_cam)
 
     # cam_image = show_cam_on_image(rgb_img, grayscale_cam)
     # cv2.imwrite(f'{args.method}_cam.jpg', cam_image)

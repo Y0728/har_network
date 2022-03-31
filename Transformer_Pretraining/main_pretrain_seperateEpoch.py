@@ -86,7 +86,7 @@ def parse_args():
     parser.add_argument('--process_data', action='store_true', default=False, help='save data offline')
     parser.add_argument('--use_uniform_sample', action='store_true', default=False, help='use uniform sampling')
     parser.add_argument('--seq_len', default=seqLen, help='default is 10')
-    parser.add_argument('--activity_list', default=['6','7','8','9','10'], help='activity types') #'6','7','8','9','10'['fall', 'run']','stand','jump','sit','fall','run','walk','bend'#'walk','fall','stand','sit'
+    parser.add_argument('--activity_list', default=['6'], help='activity types') #'6','7','8','9','10'['fall', 'run']','stand','jump','sit','fall','run','walk','bend'#'walk','fall','stand','sit'
     parser.add_argument('--concat_frame_num', type=int, default=concat_framNum,
                         help='The number of frames that are concatenated together as one sample')
     parser.add_argument('--pointLSTM', default=True, help='Create dataset for lstm if it is true, default is False')

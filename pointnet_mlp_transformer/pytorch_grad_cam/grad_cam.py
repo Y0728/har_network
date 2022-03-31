@@ -19,4 +19,5 @@ class GradCAM(BaseCAM):
                         target_category,
                         activations,
                         grads):
+        # return np.max(grads, axis=(2, 3))
         return np.mean(grads, axis=(2, 3))   # gras.shape = (1, 128, 1, 20)  np.mean(grads, axis=(2, 3)).shape = (1,128)
